@@ -1,0 +1,86 @@
+{
+  "sports": [
+    {
+      "id": "1775445521783-fxamybvj",
+      "name": "跳绳",
+      "type": "count",
+      "currentValue": 0
+    },
+    {
+      "id": "1775445540372-lihkjeaq",
+      "name": "靠墙蹲",
+      "type": "duration",
+      "unitForDuration": "min",
+      "currentValue": 0
+    },
+    {
+      "id": "1775445550715-joevf868",
+      "name": "平板支撑",
+      "type": "duration",
+      "unitForDuration": "min",
+      "currentValue": 0
+    },
+    {
+      "id": "1775456406735-wjwpn9xq",
+      "name": "广播体操",
+      "type": "count",
+      "currentValue": 0
+    },
+    {
+      "id": "1775468124504-3bokh35h",
+      "name": "站桩",
+      "type": "duration",
+      "unitForDuration": "min",
+      "currentValue": 0
+    },
+    {
+      "id": "1775728843975-qkahwu1z",
+      "name": "跑步/散步",
+      "type": "count",
+      "currentValue": 0
+    },
+    {
+      "id": "1776186081651-54kc98kc",
+      "name": "壶铃",
+      "type": "count",
+      "currentValue": 0
+    },
+    {
+      "id": "1778422527943-e8mbg0c1",
+      "name": "二郎担山",
+      "type": "count",
+      "currentValue": 0
+    },
+    {
+      "id": "1778422645315-ozii5kii",
+      "name": "立通地筯",
+      "type": "count",
+      "currentValue": 0
+    },
+    {
+      "id": "1780145162161-na8z75qx",
+      "name": "单杠",
+      "type": "count",
+      "currentValue": 0
+    },
+    {
+      "id": "1780145252327-se4ysybp",
+      "name": "步数大于12000步",
+      "type": "count",
+      "currentValue": 0
+    },
+    {
+      "id": "1781217353971-5z0ug9kk",
+      "name": "扶墙平板支撑",
+      "type": "duration",
+      "unitForDuration": "min",
+      "currentValue": 0
+    },
+    {
+      "id": "1781217437597-iwq33mtw",
+      "name": "屁股蹲",
+      "type": "count",
+      "currentValue": 0
+    }
+  ]
+}
