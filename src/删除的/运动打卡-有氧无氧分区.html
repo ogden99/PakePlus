@@ -1,0 +1,805 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes, viewport-fit=cover">
+    <title>运动打卡 · 有氧/无氧分区 · 6.8寸屏专属适配</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            font-family: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+        }
+
+        body {
+            background: #f0f4f8;
+            margin: 0;
+            padding: 10px;
+            color: #1e2a3e;
+        }
+
+        .container {
+            max-width: 100%;
+            margin: 0 auto;
+        }
+
+        /* 6.8寸屏典型宽度在 360-420px 之间，部分折叠屏展开更宽但依然紧凑 */
+        /* 整体采用流式 + 略微压缩间距，保证可读性和触摸区域不小于44px */
+        .header {
+            background: white;
+            border-radius: 22px;
+            padding: 12px 16px;
+            margin-bottom: 14px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.02);
+            border: 1px solid #e2edf2;
+        }
+
+        h1 {
+            font-size: 1.35rem;
+            font-weight: 700;
+            margin: 0 0 2px 0;
+            background: linear-gradient(135deg, #1f6e43, #2b8c5e);
+            background-clip: text;
+            -webkit-background-clip: text;
+            color: transparent;
+        }
+
+        .sub {
+            color: #5b6e8c;
+            font-size: 0.7rem;
+            margin-bottom: 0px;
+            border-left: 2px solid #2b8c5e;
+            padding-left: 8px;
+        }
+
+        /* 选项卡 - 手指触摸优化 */
+        .tabs {
+            display: flex;
+            gap: 4px;
+            margin-bottom: 16px;
+            background: transparent;
+            flex-wrap: nowrap;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+            scrollbar-width: thin;
+        }
+        .tab-btn {
+            background: transparent;
+            color: #4a627a;
+            border-radius: 40px;
+            padding: 8px 14px;
+            font-weight: 600;
+            font-size: 0.8rem;
+            border: none;
+            transition: 0.2s;
+            cursor: pointer;
+            white-space: nowrap;
+            flex-shrink: 0;
+        }
+        .tab-btn.active {
+            background: #2b8c5e;
+            color: white;
+            border-radius: 40px;
+        }
+
+        /* 运动卡片 - 6.8寸卡片间距适当减小，按钮大一点 */
+        .sports-grid {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+
+        .sport-card {
+            background: white;
+            border-radius: 20px;
+            padding: 12px 14px;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.02);
+            border: 1px solid #e2edf2;
+        }
+
+        .sport-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+            flex-wrap: wrap;
+        }
+
+        .sport-name {
+            font-size: 1.1rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            flex-wrap: wrap;
+        }
+
+        .badge {
+            font-size: 0.6rem;
+            background: #e9f3ef;
+            padding: 2px 8px;
+            border-radius: 30px;
+            color: #1f6e43;
+            font-weight: 500;
+        }
+        .badge-aerobic {
+            background: #ffe8e0;
+            color: #c25d2e;
+        }
+        .badge-anaerobic {
+            background: #e0e7ff;
+            color: #2c5282;
+        }
+
+        .delete-sport {
+            background: #fff2f0;
+            color: #b91c1c;
+            font-size: 0.75rem;
+            padding: 4px 12px;
+            border-radius: 30px;
+            border: none;
+            cursor: pointer;
+            font-weight: 500;
+        }
+
+        .stats {
+            margin-top: 6px;
+        }
+
+        .progress-area {
+            display: flex;
+            flex-direction: row;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+            background: #f9fbfd;
+            padding: 6px 10px;
+            border-radius: 36px;
+        }
+
+        .current-value {
+            font-weight: 800;
+            font-size: 1.2rem;
+            color: #1e2a3e;
+            min-width: 70px;
+        }
+
+        .unit {
+            font-size: 0.65rem;
+            font-weight: normal;
+            color: #6c86a3;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 6px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .action-buttons button, .action-buttons input, .action-buttons select {
+            padding: 5px 10px;
+            font-size: 0.7rem;
+            border-radius: 28px;
+            border: 1px solid #cbdde6;
+            background: white;
+            cursor: pointer;
+        }
+        .action-buttons button {
+            background: #eef2f7;
+            color: #1f5e41;
+            border: none;
+        }
+        .action-buttons button.quick-add {
+            background: #2b8c5e;
+            color: white;
+        }
+        .action-buttons button.backdate-btn {
+            background: #d9a13b;
+            color: white;
+        }
+        .action-buttons button.reset-btn {
+            background: #f0eef2;
+            color: #5e4b3c;
+        }
+        .action-buttons input, .action-buttons select {
+            width: auto;
+            max-width: 80px;
+        }
+
+        /* 板块分隔 */
+        .section-divider {
+            margin: 14px 0 10px 0;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .section-divider h2 {
+            font-size: 1.2rem;
+            font-weight: 700;
+            margin: 0;
+            background: linear-gradient(120deg, #2c5a74, #2b8c5e);
+            background-clip: text;
+            -webkit-background-clip: text;
+            color: transparent;
+        }
+        .divider-line {
+            flex: 1;
+            height: 2px;
+            background: linear-gradient(90deg, #cbdde6, #aac7d6);
+        }
+
+        /* 统计卡片 */
+        .stats-panel, .calendar-panel, .add-sport-card, .backup-card {
+            background: white;
+            border-radius: 22px;
+            padding: 14px;
+            border: 1px solid #e2edf2;
+            margin-bottom: 14px;
+        }
+        .stats-title {
+            font-size: 1rem;
+            font-weight: 700;
+            margin-bottom: 10px;
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
+            gap: 6px;
+        }
+        .filter-buttons {
+            display: flex;
+            gap: 5px;
+            flex-wrap: wrap;
+        }
+        .filter-btn {
+            background: #eef2f7;
+            color: #2c5a74;
+            padding: 4px 10px;
+            border-radius: 28px;
+            font-size: 0.65rem;
+            font-weight: 500;
+            cursor: pointer;
+        }
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
+            gap: 10px;
+        }
+        .summary-card {
+            background: #f9fbfd;
+            border-radius: 18px;
+            padding: 8px;
+        }
+        .summary-number {
+            font-size: 1.3rem;
+            font-weight: 800;
+        }
+        .detail-list {
+            margin-top: 12px;
+            border-top: 1px solid #e2edf2;
+            padding-top: 10px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        .detail-item {
+            font-size: 0.75rem;
+            padding: 6px 0;
+        }
+
+        /* 日历区域 - 触摸友好，格子简洁 */
+        .calendar-weekdays {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            text-align: center;
+            font-weight: 600;
+            font-size: 0.65rem;
+            margin-bottom: 4px;
+        }
+        .calendar-days {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 3px;
+        }
+        .calendar-day {
+            background: #f9fbfd;
+            border-radius: 12px;
+            padding: 4px 2px;
+            min-height: 62px;
+            cursor: pointer;
+            border: 1px solid #e9edf2;
+            font-size: 0.6rem;
+            overflow-y: auto;
+        }
+        .day-number {
+            font-weight: 700;
+            font-size: 0.7rem;
+            text-align: right;
+            margin-bottom: 2px;
+            padding-right: 4px;
+        }
+        .day-sport-item {
+            font-size: 0.55rem;
+            white-space: nowrap;
+            overflow-x: hidden;
+            text-overflow: ellipsis;
+            background: #eef2f7;
+            border-radius: 20px;
+            padding: 1px 4px;
+            margin-bottom: 2px;
+            display: block;
+        }
+
+        /* 添加运动表单 */
+        .form-row {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .input-group {
+            width: 100%;
+        }
+        .input-group label {
+            font-size: 0.7rem;
+            font-weight: 600;
+            margin-bottom: 4px;
+            display: block;
+        }
+        .input-group input, .input-group select {
+            width: 100%;
+            padding: 8px 10px;
+            border-radius: 20px;
+            border: 1px solid #cbdde6;
+            font-size: 0.8rem;
+        }
+        .category-radio-group {
+            display: flex;
+            gap: 16px;
+            align-items: center;
+            margin-top: 4px;
+        }
+        .category-radio-group label {
+            font-size: 0.75rem;
+            font-weight: normal;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
+        button {
+            padding: 8px 16px;
+            border-radius: 40px;
+            border: none;
+            font-weight: 600;
+            background: #2b8c5e;
+            color: white;
+            cursor: pointer;
+            font-size: 0.8rem;
+        }
+        .btn-outline {
+            background: transparent;
+            border: 1px solid #bcd0dc;
+            color: #2c5a74;
+        }
+        .folder-hint {
+            font-size: 0.65rem;
+            background: #eef3f7;
+            border-radius: 20px;
+            padding: 5px 10px;
+            margin-top: 6px;
+        }
+        .info-tip {
+            font-size: 0.65rem;
+            margin-top: 10px;
+            background: #eef3f7;
+            padding: 5px 12px;
+            border-radius: 30px;
+        }
+        .backup-buttons-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+        hr {
+            margin: 12px 0;
+        }
+        /* 模态框适配 */
+        .modal-content {
+            max-width: 90%;
+            width: 340px;
+            padding: 18px;
+        }
+        .toast-msg {
+            bottom: 12px;
+            right: 12px;
+            font-size: 0.7rem;
+            padding: 5px 12px;
+        }
+        footer {
+            font-size: 0.6rem;
+            text-align: center;
+            margin-top: 16px;
+            color: #7b8ea8;
+        }
+        /* 6.8寸屏 增强可点区域 */
+        button, .tab-btn, .filter-btn, .delete-sport, .action-buttons button, .calendar-day {
+            touch-action: manipulation;
+        }
+        @media (max-width: 480px) {
+            .action-buttons input, .action-buttons select {
+                max-width: 70px;
+            }
+            .current-value {
+                font-size: 1.1rem;
+            }
+        }
+        /* 针对 6.8 寸竖屏优化间距 */
+        @media (min-width: 380px) and (max-width: 500px) {
+            .calendar-day {
+                min-height: 68px;
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="header">
+        <h1>🏋️ 运动打卡 · 有氧｜无氧</h1>
+        <div class="sub">6.8寸适配 | 触控优化 | 打卡/日历/备份</div>
+    </div>
+
+    <div class="tabs">
+        <button class="tab-btn active" data-tab="sports-tab">📋 运动打卡</button>
+        <button class="tab-btn" data-tab="calendar-tab">📅 日历&汇总</button>
+        <button class="tab-btn" data-tab="add-tab">➕ 添加运动</button>
+        <button class="tab-btn" data-tab="backup-tab">💾 备份</button>
+    </div>
+
+    <div id="sports-tab" class="tab-content active-tab">
+        <div id="sportsListContainer" class="sports-grid"></div>
+    </div>
+
+    <div id="calendar-tab" class="tab-content">
+        <div class="stats-panel">
+            <div class="stats-title"><span>📊 运动汇总</span><div class="filter-buttons" id="statsFilterGroup"><span class="filter-btn" data-filter="day">今日</span><span class="filter-btn" data-filter="week">本周</span><span class="filter-btn" data-filter="month">本月</span><span class="filter-btn" data-filter="year">本年</span><span class="filter-btn active" data-filter="all">全部</span></div></div>
+            <div id="summaryStatsContainer"></div>
+        </div>
+        <div class="calendar-panel">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                <div><button id="prevMonthBtn" style="background:transparent; padding:4px 12px; font-size:1rem;">◀</button><button id="nextMonthBtn" style="background:transparent; padding:4px 12px;">▶</button></div>
+                <div class="calendar-month-year" id="calendarMonthYear" style="font-size:1rem; font-weight:700;"></div>
+                <div></div>
+            </div>
+            <div class="calendar-weekdays"><span>一</span><span>二</span><span>三</span><span>四</span><span>五</span><span>六</span><span>日</span></div>
+            <div id="calendarDaysContainer" class="calendar-days"></div>
+            <div style="font-size:0.55rem; text-align:center; margin-top:8px;">💡 点击格子查看打卡详情</div>
+        </div>
+    </div>
+
+    <div id="add-tab" class="tab-content">
+        <div class="add-sport-card">
+            <div class="form-row">
+                <div class="input-group"><label>📌 运动名称</label><input type="text" id="newSportName" placeholder="例：跑步, 深蹲"></div>
+                <div class="input-group"><label>📏 计量类型</label><select id="newSportType"><option value="count">🔢 按次数 (次)</option><option value="duration">⏱️ 按时长</option></select></div>
+                <div class="input-group" id="durationUnitGroup" style="display: none;"><label>⏲️ 单位</label><select id="durationUnit"><option value="sec">秒</option><option value="min" selected>分</option><option value="hour">时</option></select></div>
+                <div class="input-group"><label>🏷️ 分类</label><div class="category-radio-group"><label><input type="radio" name="sportCategory" value="aerobic" checked> 🏃 有氧</label><label><input type="radio" name="sportCategory" value="anaerobic"> 💪 无氧</label></div></div>
+                <button id="addSportBtn">✅ 确认添加</button>
+            </div>
+            <div class="info-tip">💡 新项目自动归类，数据实时保存</div>
+        </div>
+    </div>
+
+    <div id="backup-tab" class="tab-content">
+        <div class="backup-card">
+            <div class="backup-section"><h3 style="font-size:0.95rem;">📦 完整数据备份</h3><div class="backup-buttons-group"><button id="exportFullBackupBtn" class="btn-outline">⬇️ 导出完整备份</button><label for="importFullInput" class="btn-outline" style="cursor: pointer;">📂 导入完整备份</label><input type="file" id="importFullInput" accept=".json" style="display: none;"></div><div class="folder-hint">💡 导出时可选择保存位置 (支持另存为)</div></div>
+            <hr>
+            <div class="backup-section"><h3 style="font-size:0.95rem;">🏷️ 运动项目备份</h3><div class="backup-buttons-group"><button id="exportSportsOnlyBtn" class="btn-outline">⬇️ 导出运动项目</button><label for="importSportsOnlyInput" class="btn-outline" style="cursor: pointer;">📂 导入运动项目</label><input type="file" id="importSportsOnlyInput" accept=".json" style="display: none;"></div></div>
+            <hr>
+            <div class="backup-section"><h3 style="font-size:0.95rem;">⚠️ 危险操作</h3><button id="clearAllDemoBtn" class="btn-outline" style="border-color:#dc6b4a; color:#b45f3b;">🗑️ 清空所有数据</button></div>
+        </div>
+    </div>
+    <footer>✔ 数据自动保存本地 | 支持补打卡 | 有氧/无氧分区</footer>
+</div>
+
+<div id="backdateModal" class="modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); align-items:center; justify-content:center; z-index:1000;"><div class="modal-content" style="background:white; border-radius:28px;"><div class="modal-header" style="font-size:1.2rem; font-weight:700;">📅 补打卡</div><div class="modal-field"><label>🏋️ 运动</label><select id="modalSportSelect"></select></div><div class="modal-field"><label>📆 日期</label><input type="date" id="modalDate"></div><div class="modal-field" id="modalValueField"><label>🏅 数量</label><input type="number" id="modalValue" step="any"></div><div class="modal-buttons" style="display:flex; gap:12px; justify-content:flex-end; margin-top:16px;"><button id="modalCancelBtn" class="btn-outline">取消</button><button id="modalConfirmBtn" style="background:#2b8c5e;">确认</button></div></div></div>
+<div id="toastMsg" class="toast-msg" style="position:fixed; bottom:20px; right:20px; background:#1f6e43; color:white; border-radius:40px; padding:5px 12px; opacity:0; transition:opacity 0.2s; pointer-events:none;"></div>
+
+<script>
+    const STORAGE_KEY = "workout_tracker_split_v3_6_8";
+    let sports = [];
+    let records = [];
+
+    function showToast(msg, duration = 1800) {
+        const toast = document.getElementById('toastMsg');
+        toast.textContent = msg;
+        toast.style.opacity = '1';
+        setTimeout(() => { toast.style.opacity = '0'; }, duration);
+    }
+
+    // 东八区工具（完整保留）
+    function getBeijingDate(date = new Date()) {
+        const utc = date.getTime() + (date.getTimezoneOffset() * 60000);
+        return new Date(utc + 3600000 * 8);
+    }
+    function getBeijingDateStr(date = new Date()) {
+        const beijing = getBeijingDate(date);
+        return `${beijing.getFullYear()}-${String(beijing.getMonth()+1).padStart(2,'0')}-${String(beijing.getDate()).padStart(2,'0')}`;
+    }
+    function getBeijingTimestampFromDateStr(dateStr) {
+        const parts = dateStr.split('-');
+        const beijingDate = new Date(parseInt(parts[0]), parseInt(parts[1])-1, parseInt(parts[2]), 0, 0, 0);
+        return beijingDate.getTime() - (beijingDate.getTimezoneOffset() * 60000);
+    }
+    function formatBeijingYMD(timestamp) {
+        const beijing = getBeijingDate(new Date(timestamp));
+        return `${beijing.getFullYear()}-${String(beijing.getMonth()+1).padStart(2,'0')}-${String(beijing.getDate()).padStart(2,'0')}`;
+    }
+    function getStartOfBeijingDay(beijingDate) {
+        const start = new Date(beijingDate.getFullYear(), beijingDate.getMonth(), beijingDate.getDate(), 0, 0, 0);
+        return start.getTime() - (start.getTimezoneOffset() * 60000);
+    }
+    function getBeijingTodayRange() {
+        const todayBeijing = getBeijingDate(new Date());
+        const start = getStartOfBeijingDay(todayBeijing);
+        return { start, end: start + 86400000 - 1 };
+    }
+    function getBeijingWeekRange() {
+        const todayBeijing = getBeijingDate(new Date());
+        const dayOfWeek = todayBeijing.getDay();
+        let mondayOffset = dayOfWeek === 0 ? -6 : 1 - dayOfWeek;
+        const monday = new Date(todayBeijing);
+        monday.setDate(todayBeijing.getDate() + mondayOffset);
+        const mondayStart = getStartOfBeijingDay(monday);
+        const nextMonday = new Date(monday);
+        nextMonday.setDate(monday.getDate() + 7);
+        return { start: mondayStart, end: getStartOfBeijingDay(nextMonday) - 1 };
+    }
+    function getBeijingMonthRange() {
+        const nowBeijing = getBeijingDate(new Date());
+        const firstDay = new Date(nowBeijing.getFullYear(), nowBeijing.getMonth(), 1);
+        const lastDay = new Date(nowBeijing.getFullYear(), nowBeijing.getMonth()+1, 0, 23,59,59);
+        return { start: getStartOfBeijingDay(firstDay), end: getStartOfBeijingDay(lastDay) + 86400000 - 1 };
+    }
+    function getBeijingYearRange() {
+        const nowBeijing = getBeijingDate(new Date());
+        const firstDay = new Date(nowBeijing.getFullYear(), 0, 1);
+        const lastDay = new Date(nowBeijing.getFullYear(), 11, 31, 23,59,59);
+        return { start: getStartOfBeijingDay(firstDay), end: getStartOfBeijingDay(lastDay) + 86400000 - 1 };
+    }
+    function saveToLocal() { try { localStorage.setItem(STORAGE_KEY, JSON.stringify({ sports, records })); } catch(e) {} }
+    function generateId() { return Date.now() + '-' + Math.random().toString(36).substr(2, 8); }
+    function syncCurrentValuesFromRecords() {
+        sports.forEach(s => s.currentValue = 0);
+        for (let rec of records) {
+            const sport = sports.find(s => s.id === rec.sportId);
+            if (sport) sport.currentValue += rec.value;
+        }
+    }
+    function loadInitialData() {
+        const stored = localStorage.getItem(STORAGE_KEY);
+        if (stored) {
+            try {
+                const data = JSON.parse(stored);
+                if (data.sports && data.records) {
+                    sports = data.sports;
+                    records = data.records;
+                    sports.forEach(s => {
+                        if (s.type === 'duration' && !s.unitForDuration) s.unitForDuration = 'min';
+                        if (typeof s.currentValue !== 'number') s.currentValue = 0;
+                        if (!s.category) s.category = 'aerobic';
+                    });
+                    syncCurrentValuesFromRecords();
+                    showToast("✅ 数据加载", 1000);
+                    return;
+                }
+            } catch(e) { localStorage.removeItem(STORAGE_KEY); }
+        }
+        sports = [
+            { id: generateId(), name: "🏃 跑步", type: "duration", unitForDuration: "min", currentValue: 0, category: "aerobic" },
+            { id: generateId(), name: "🚴 骑行", type: "duration", unitForDuration: "hour", currentValue: 0, category: "aerobic" },
+            { id: generateId(), name: "💪 俯卧撑", type: "count", currentValue: 0, category: "anaerobic" },
+            { id: generateId(), name: "🏋️ 深蹲", type: "count", currentValue: 0, category: "anaerobic" }
+        ];
+        records = [];
+        const nowBeijingTs = getStartOfBeijingDay(getBeijingDate(new Date()));
+        const dayMs = 86400000;
+        const addMock = (sid, val, offsetDays) => records.push({ recordId: generateId(), sportId: sid, timestamp: nowBeijingTs - offsetDays * dayMs, value: val });
+        addMock(sports[0].id, 30*60, 2);
+        addMock(sports[2].id, 20, 1);
+        addMock(sports[1].id, 3600, 3);
+        addMock(sports[3].id, 35, 0);
+        syncCurrentValuesFromRecords();
+        saveToLocal();
+        showToast("📌 示例数据已加载", 1200);
+    }
+    function addWorkoutRecord(sportId, addedValue, timestamp = null) {
+        if (addedValue <= 0) return false;
+        const sport = sports.find(s => s.id === sportId);
+        if (!sport) return false;
+        const finalTimestamp = timestamp !== null ? timestamp : getStartOfBeijingDay(getBeijingDate(new Date()));
+        records.push({ recordId: generateId(), sportId, timestamp: finalTimestamp, value: addedValue });
+        sport.currentValue += addedValue;
+        saveToLocal();
+        renderAll();
+        return true;
+    }
+    function backdateWorkout(sportId, addedValue, dateStr) { return addWorkoutRecord(sportId, addedValue, getBeijingTimestampFromDateStr(dateStr)); }
+    function resetSportProgress(sportId) {
+        if (!confirm(`重置该运动所有打卡记录？`)) return;
+        records = records.filter(r => r.sportId !== sportId);
+        const sport = sports.find(s => s.id === sportId);
+        if (sport) sport.currentValue = 0;
+        saveToLocal();
+        renderAll();
+    }
+    function deleteSportById(id) {
+        if (confirm('删除运动及所有历史记录？')) {
+            sports = sports.filter(s => s.id !== id);
+            records = records.filter(r => r.sportId !== id);
+            saveToLocal();
+            renderAll();
+        }
+    }
+    function getTimeRangeByFilter(filter) {
+        if(filter === 'day') return getBeijingTodayRange();
+        if(filter === 'week') return getBeijingWeekRange();
+        if(filter === 'month') return getBeijingMonthRange();
+        if(filter === 'year') return getBeijingYearRange();
+        return { start: 0, end: Date.now() };
+    }
+    function computeSummary(filter) {
+        let {start,end} = getTimeRangeByFilter(filter);
+        const filtered = records.filter(r => r.timestamp >= start && r.timestamp <= end);
+        const sportMap = new Map();
+        for(let rec of filtered){
+            const sport = sports.find(s => s.id === rec.sportId);
+            if(!sport) continue;
+            if(!sportMap.has(sport.id)) sportMap.set(sport.id, {sport, total:0});
+            sportMap.get(sport.id).total += rec.value;
+        }
+        let totalCount = 0, totalDurationSec = 0;
+        for(let {sport,total} of sportMap.values()){
+            if(sport.type === 'count') totalCount += total;
+            else totalDurationSec += total;
+        }
+        const hours = Math.floor(totalDurationSec/3600), minutes = Math.floor((totalDurationSec%3600)/60);
+        let durationFmt = (hours?hours+'小时':'')+(minutes?minutes+'分':'')+(totalDurationSec===0?'0秒':'');
+        if(totalDurationSec>0 && hours===0 && minutes===0) durationFmt = totalDurationSec+'秒';
+        const details = Array.from(sportMap.values()).map(({sport,total})=>{
+            if(sport.type==='count') return {name:sport.name, value:total, unit:'次'};
+            const unit = sport.unitForDuration||'min';
+            if(unit==='sec') return {name:sport.name, value:total, unit:'秒'};
+            if(unit==='min') return {name:sport.name, value:(total/60).toFixed(1), unit:'分钟'};
+            return {name:sport.name, value:(total/3600).toFixed(2), unit:'小时'};
+        });
+        return {totalCount, totalDurationFormatted:durationFmt, details, recordCount:filtered.length};
+    }
+    function renderStats(activeFilter='all') {
+        const sum = computeSummary(activeFilter);
+        const container = document.getElementById('summaryStatsContainer');
+        if(container) container.innerHTML = `<div class="summary-grid"><div class="summary-card"><div class="summary-label">🏋️ 总次数</div><div class="summary-number">${sum.totalCount}<span class="unit">次</span></div></div><div class="summary-card"><div class="summary-label">⏱️ 总时长</div><div class="summary-number">${sum.totalDurationFormatted}</div></div><div class="summary-card"><div class="summary-label">📌 打卡数</div><div class="summary-number">${sum.recordCount}</div></div></div><div class="detail-list"><div style="font-weight:600;">📋 各运动明细</div>${sum.details.length===0?'无记录':sum.details.map(d=>`<div class="detail-item"><span>${escapeHtml(d.name)}</span> <span><strong>${d.value}</strong> ${d.unit}</span></div>`).join('')}</div>`;
+    }
+    function renderSports() {
+        const container = document.getElementById('sportsListContainer');
+        if(!container) return;
+        if(sports.length===0){ container.innerHTML='<div style="padding:30px;text-align:center;">暂无运动，请添加</div>'; return; }
+        const aerobic = sports.filter(s=>s.category==='aerobic');
+        const anaerobic = sports.filter(s=>s.category==='anaerobic');
+        function cardHtml(sport){
+            let displayValue=0, unitText='';
+            if(sport.type==='count'){ displayValue=sport.currentValue; unitText='次'; }
+            else{ const sec=sport.currentValue, u=sport.unitForDuration||'min';
+                if(u==='sec'){ displayValue=sec; unitText='秒';}
+                else if(u==='min'){ displayValue=(sec/60).toFixed(1); unitText='分钟';}
+                else{ displayValue=(sec/3600).toFixed(2); unitText='小时';}
+            }
+            const catLabel = sport.category==='aerobic'?'有氧':'无氧';
+            const badgeClass = sport.category==='aerobic'?'badge-aerobic':'badge-anaerobic';
+            return `<div class="sport-card">
+                <div class="sport-header"><div class="sport-name">${escapeHtml(sport.name)}<span class="badge ${badgeClass}">${catLabel}</span></div><button class="delete-sport" data-id="${sport.id}">删除</button></div>
+                <div class="stats"><div class="progress-area"><div class="current-value">${displayValue}<span class="unit">${unitText}</span></div><div class="action-buttons">${sport.type==='count'?`<button class="quick-add" data-id="${sport.id}" data-inc="1">+1</button><button class="quick-add" data-id="${sport.id}" data-inc="5">+5</button><input type="number" id="custom-count-${sport.id}" placeholder="自定义" style="width:70px"><button class="quick-add-custom" data-id="${sport.id}">今日打卡</button>`:`<select id="dur-unit-${sport.id}"><option value="sec">秒</option><option value="min" ${sport.unitForDuration==='min'?'selected':''}>分</option><option value="hour">时</option></select><input type="number" id="dur-val-${sport.id}" placeholder="数值" style="width:75px"><button class="quick-add-duration" data-id="${sport.id}">今日打卡</button>`}<button class="backdate-btn" data-sport-id="${sport.id}" data-sport-name="${escapeHtml(sport.name)}" data-type="${sport.type}">📅 补卡</button><button class="reset-btn" data-id="${sport.id}">重置</button></div></div></div></div>`;
+        }
+        let html='';
+        if(aerobic.length) html+=`<div class="section-divider"><h2>🏃 有氧运动</h2><div class="divider-line"></div></div>${aerobic.map(cardHtml).join('')}`;
+        if(anaerobic.length) html+=`<div class="section-divider"><h2>💪 无氧运动</h2><div class="divider-line"></div></div>${anaerobic.map(cardHtml).join('')}`;
+        container.innerHTML=html;
+        attachEvents();
+    }
+    function attachEvents(){
+        document.querySelectorAll('.delete-sport').forEach(btn=>btn.addEventListener('click',()=>deleteSportById(btn.dataset.id)));
+        document.querySelectorAll('.quick-add').forEach(btn=>btn.addEventListener('click',()=>addWorkoutRecord(btn.dataset.id, parseInt(btn.dataset.inc))));
+        document.querySelectorAll('.quick-add-custom').forEach(btn=>btn.addEventListener('click',()=>{ const id=btn.dataset.id; const v=parseFloat(document.getElementById(`custom-count-${id}`).value); if(v>0) addWorkoutRecord(id,v); }));
+        document.querySelectorAll('.quick-add-duration').forEach(btn=>btn.addEventListener('click',()=>{ const id=btn.dataset.id; const raw=parseFloat(document.getElementById(`dur-val-${id}`).value); const unit=document.getElementById(`dur-unit-${id}`).value; if(raw>0){ let sec=unit==='sec'?raw:(unit==='min'?raw*60:raw*3600); addWorkoutRecord(id,sec); } }));
+        document.querySelectorAll('.reset-btn').forEach(btn=>btn.addEventListener('click',()=>resetSportProgress(btn.dataset.id)));
+        document.querySelectorAll('.backdate-btn').forEach(btn=>btn.addEventListener('click',()=>openBackdateModal(btn.dataset.sportId, btn.dataset.sportName, btn.dataset.type)));
+    }
+    function getDailySummaryByMonth(year,month){ 
+        const startTs=getStartOfBeijingDay(new Date(year,month,1));
+        const endTs=getStartOfBeijingDay(new Date(year,month+1,0))+86400000-1;
+        const monthRecords=records.filter(r=>r.timestamp>=startTs&&r.timestamp<=endTs);
+        const map=new Map();
+        for(let rec of monthRecords){
+            const sport=sports.find(s=>s.id===rec.sportId);
+            if(!sport) continue;
+            const dateStr=formatBeijingYMD(rec.timestamp);
+            if(!map.has(dateStr)) map.set(dateStr,[]);
+            let list=map.get(dateStr);
+            let ex=list.find(i=>i.sportId===sport.id);
+            if(ex) ex.totalValue+=rec.value;
+            else list.push({sportId:sport.id, sportName:sport.name, type:sport.type, totalValue:rec.value, unitForDuration:sport.unitForDuration});
+        }
+        const result=new Map();
+        for(let [d,items] of map.entries()){ result.set(d, items.map(it=>{ if(it.type==='count') return `${it.sportName}+${it.totalValue}次`; const u=it.unitForDuration||'min'; let val=it.totalValue; if(u==='min') val=(it.totalValue/60).toFixed(1); else if(u==='hour') val=(it.totalValue/3600).toFixed(2); return `${it.sportName}+${val}${u==='sec'?'秒':u==='min'?'分':'时'}`; })); }
+        return result;
+    }
+    let cyear=getBeijingDate(new Date()).getFullYear(), cmonth=getBeijingDate(new Date()).getMonth();
+    function renderCalendar(){
+        const daily=getDailySummaryByMonth(cyear,cmonth);
+        const first=new Date(cyear,cmonth,1);
+        let startOffset=first.getDay()===0?6:first.getDay()-1;
+        const daysInMonth=new Date(cyear,cmonth+1,0).getDate();
+        const todayStr=getBeijingDateStr(new Date());
+        let html=''; let day=1;
+        for(let i=0;i<42;i++){
+            if(i<startOffset||day>daysInMonth){ html+='<div class="calendar-day empty"></div>'; continue; }
+            const dateStr=`${cyear}-${String(cmonth+1).padStart(2,'0')}-${String(day).padStart(2,'0')}`;
+            const isToday=dateStr===todayStr;
+            const items=daily.get(dateStr)||[];
+            const itemsHtml=items.map(t=>`<div class="day-sport-item">${escapeHtml(t.length>14?t.slice(0,12)+'..':t)}</div>`).join('');
+            html+=`<div class="calendar-day ${isToday?'today':''}" data-date="${dateStr}"><div class="day-number">${day}</div>${itemsHtml}</div>`;
+            day++;
+        }
+        document.getElementById('calendarDaysContainer').innerHTML=html;
+        document.getElementById('calendarMonthYear').innerHTML=`${cyear}年 ${cmonth+1}月`;
+        document.querySelectorAll('.calendar-day[data-date]').forEach(el=>el.addEventListener('click',()=>{ const d=el.dataset.date; const list=daily.get(d)||[]; alert(`${d}打卡:\n${list.join('\n')||'无记录'}`); }));
+    }
+    function addNewSport(){
+        const name=document.getElementById('newSportName').value.trim();
+        if(!name) return alert("输入运动名称");
+        const type=document.getElementById('newSportType').value;
+        let unit=null;
+        if(type==='duration') unit=document.getElementById('durationUnit').value;
+        const category=document.querySelector('input[name="sportCategory"]:checked').value;
+        const newSport={id:generateId(), name, type, currentValue:0, category};
+        if(type==='duration') newSport.unitForDuration=unit;
+        sports.push(newSport);
+        saveToLocal();
+        renderAll();
+        document.getElementById('newSportName').value='';
+        showToast(`✅ 添加${category==='aerobic'?'有氧':'无氧'}运动`,1300);
+        document.querySelector('.tab-btn[data-tab="sports-tab"]').click();
+    }
+    async function exportWithFilePicker(data,filename){ try{ if('showSaveFilePicker' in window){ const blob=new Blob([JSON.stringify(data,null,2)],{type:'application/json'}); const handle=await window.showSaveFilePicker({suggestedName:filename, types:[{accept:{'application/json':['.json']}}]}); const w=await handle.createWritable(); await w.write(blob); await w.close(); showToast("保存成功",1300); } else{ const a=document.createElement('a'); a.href=URL.createObjectURL(new Blob([JSON.stringify(data,null,2)])); a.download=filename; a.click(); showToast("已导出",1300); } }catch(e){ if(e.name!=='AbortError') showToast("保存失败",1300); } }
+    function exportFullBackup(){ exportWithFilePicker({sports,records},`full_${Date.now()}.json`); }
+    function exportSportsOnly(){ const copy=sports.map(s=>({id:s.id,name:s.name,type:s.type,unitForDuration:s.unitForDuration,category:s.category})); exportWithFilePicker({sports:copy},`sports_${Date.now()}.json`); }
+    function importFullBackup(file){ const r=new FileReader(); r.onload=e=>{ try{ const d=JSON.parse(e.target.result); if(d.sports && d.records){ sports=d.sports; records=d.records; syncCurrentValuesFromRecords(); saveToLocal(); renderAll(); showToast("完整备份导入成功",1600); } else alert("无效文件"); } catch(err){ alert("解析失败"); } }; r.readAsText(file); }
+    function importSportsOnly(file){ const r=new FileReader(); r.onload=e=>{ try{ const d=JSON.parse(e.target.result); if(d.sports && Array.isArray(d.sports)){ const newSports=d.sports.map(s=>({id:generateId(), name:s.name, type:s.type, unitForDuration:s.type==='duration'?(s.unitForDuration||'min'):undefined, category:s.category||'aerobic', currentValue:0})); if(confirm('合并导入运动项目？')){ sports.push(...newSports); saveToLocal(); renderAll(); showToast(`导入${newSports.length}个项目`,1300); } } else alert("格式错误"); } catch(err){ alert("解析失败"); } }; r.readAsText(file); }
+    function clearAll(){ if(confirm("彻底清空所有数据？")){ sports=[]; records=[]; saveToLocal(); renderAll(); showToast("已清空",1300); } }
+    let currentBackdateSportId, currentBackdateSportType;
+    function openBackdateModal(id,name,type){ currentBackdateSportId=id; currentBackdateSportType=type; document.getElementById('modalSportSelect').innerHTML=`<option value="${id}">${name}</option>`; document.getElementById('modalDate').value=getBeijingDateStr(new Date()); document.getElementById('modalValue').value=''; document.querySelector('#modalValueField label').innerText=type==='count'?'🏅 次数':'⏱️ 时长数值'; document.getElementById('backdateModal').style.display='flex'; }
+    function closeModal(){ document.getElementById('backdateModal').style.display='none'; }
+    function confirmBackdateModal(){ const val=parseFloat(document.getElementById('modalValue').value); if(isNaN(val)||val<=0) return alert("有效数值"); const dateStr=document.getElementById('modalDate').value; let finalVal=val; if(currentBackdateSportType==='duration'){ const s=sports.find(s=>s.id===currentBackdateSportId); const u=s?.unitForDuration||'min'; if(u==='min') finalVal=val*60; else if(u==='hour') finalVal=val*3600; } if(backdateWorkout(currentBackdateSportId, finalVal, dateStr)) closeModal(); else alert("补打卡失败"); }
+    function renderAll(){ renderSports(); const active=document.querySelector('#statsFilterGroup .filter-btn.active')?.dataset.filter||'all'; renderStats(active); renderCalendar(); }
+    function bindEvents(){
+        document.getElementById('addSportBtn').addEventListener('click',addNewSport);
+        document.getElementById('exportFullBackupBtn').addEventListener('click',exportFullBackup);
+        document.getElementById('importFullInput').addEventListener('change',e=>{ if(e.target.files[0]) importFullBackup(e.target.files[0]); e.target.value=''; });
+        document.getElementById('exportSportsOnlyBtn').addEventListener('click',exportSportsOnly);
+        document.getElementById('importSportsOnlyInput').addEventListener('change',e=>{ if(e.target.files[0]) importSportsOnly(e.target.files[0]); e.target.value=''; });
+        document.getElementById('clearAllDemoBtn').addEventListener('click',clearAll);
+        document.getElementById('newSportType').addEventListener('change',()=>{ document.getElementById('durationUnitGroup').style.display=document.getElementById('newSportType').value==='duration'?'flex':'none'; });
+        document.getElementById('durationUnitGroup').style.display=document.getElementById('newSportType').value==='duration'?'flex':'none';
+        document.getElementById('prevMonthBtn').addEventListener('click',()=>{ cmonth--; if(cmonth<0){ cmonth=11; cyear--; } renderCalendar(); });
+        document.getElementById('nextMonthBtn').addEventListener('click',()=>{ cmonth++; if(cmonth>11){ cmonth=0; cyear++; } renderCalendar(); });
+        document.querySelectorAll('#statsFilterGroup .filter-btn').forEach(btn=>btn.addEventListener('click',()=>{ document.querySelectorAll('#statsFilterGroup .filter-btn').forEach(b=>b.classList.remove('active')); btn.classList.add('active'); renderStats(btn.dataset.filter); }));
+        document.getElementById('modalCancelBtn').addEventListener('click',closeModal);
+        document.getElementById('modalConfirmBtn').addEventListener('click',confirmBackdateModal);
+        window.addEventListener('click',e=>{ if(e.target===document.getElementById('backdateModal')) closeModal(); });
+        document.querySelectorAll('.tab-btn').forEach(btn=>btn.addEventListener('click',()=>{ const id=btn.dataset.tab; document.querySelectorAll('.tab-content').forEach(tc=>tc.classList.remove('active-tab')); document.getElementById(id).classList.add('active-tab'); document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active')); btn.classList.add('active'); if(id==='calendar-tab') renderCalendar(); }));
+    }
+    function escapeHtml(str){ return String(str).replace(/[&<>]/g, function(m){ if(m==='&') return '&amp;'; if(m==='<') return '&lt;'; if(m==='>') return '&gt;'; return m;}); }
+    function init(){ loadInitialData(); bindEvents(); renderAll(); }
+    init();
+</script>
+</body>
+</html>
