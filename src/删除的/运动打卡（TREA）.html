@@ -1,0 +1,2293 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>运动打卡程序</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            color: white;
+            margin-bottom: 30px;
+        }
+
+        header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .tabs {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 30px;
+            flex-wrap: wrap;
+        }
+
+        .tab-btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 25px;
+            background: rgba(255,255,255,0.2);
+            color: white;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(5px);
+        }
+
+        .tab-btn:hover {
+            background: rgba(255,255,255,0.3);
+            transform: translateY(-2px);
+        }
+
+        .tab-btn.active {
+            background: white;
+            color: #667eea;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+
+        .tab-content {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.15);
+        }
+
+        .section {
+            display: none;
+        }
+
+        .section.active {
+            display: block;
+        }
+
+        .add-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            margin-bottom: 20px;
+            transition: transform 0.2s;
+        }
+
+        .add-btn:hover {
+            transform: scale(1.05);
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border-color 0.3s;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            width: 90%;
+            max-width: 450px;
+            position: relative;
+            animation: modalFadeIn 0.3s ease;
+        }
+
+        @keyframes modalFadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .modal-title {
+            font-size: 1.5rem;
+            margin-bottom: 20px;
+            color: #333;
+        }
+
+        .close-btn {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #999;
+        }
+
+        .close-btn:hover {
+            color: #333;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+
+        .btn-group button {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 10px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-confirm {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-confirm:hover {
+            transform: scale(1.02);
+        }
+
+        .btn-cancel {
+            background: #f0f0f0;
+            color: #666;
+        }
+
+        .btn-cancel:hover {
+            background: #e0e0e0;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+        }
+
+        table th,
+        table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid #eee;
+        }
+
+        table th {
+            background: #f8f9fa;
+            font-weight: 600;
+            color: #555;
+        }
+
+        table tr:hover {
+            background: #f8f9fa;
+        }
+
+        .action-btns {
+            display: flex;
+            gap: 8px;
+        }
+
+        .action-btn {
+            padding: 6px 12px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.8rem;
+            transition: all 0.2s;
+        }
+
+        .edit-btn {
+            background: #ffc107;
+            color: #333;
+        }
+
+        .edit-btn:hover {
+            background: #e6ae00;
+        }
+
+        .delete-btn {
+            background: #dc3545;
+            color: white;
+        }
+
+        .delete-btn:hover {
+            background: #c82333;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 25px;
+            border-radius: 15px;
+            text-align: center;
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+        }
+
+        .stat-value {
+            font-size: 2.5rem;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .stat-label {
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+
+        .summary-tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .summary-tab {
+            padding: 10px 20px;
+            border: 2px solid #667eea;
+            border-radius: 20px;
+            background: white;
+            color: #667eea;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: all 0.3s;
+        }
+
+        .summary-tab:hover {
+            background: #f0f0ff;
+        }
+
+        .summary-tab.active {
+            background: #667eea;
+            color: white;
+        }
+
+        .calendar-container {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 5px;
+            margin-top: 20px;
+        }
+
+        .calendar-day {
+            aspect-ratio: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            border-radius: 8px;
+            background: #f8f9fa;
+            cursor: pointer;
+            transition: all 0.2s;
+            position: relative;
+        }
+
+        .calendar-day:hover {
+            background: #e9ecef;
+        }
+
+        .calendar-day.today {
+            background: #667eea;
+            color: white;
+        }
+
+        .calendar-day.has-record {
+            background: #28a745;
+            color: white;
+        }
+
+        .calendar-day.today.has-record {
+            background: linear-gradient(135deg, #667eea 0%, #28a745 100%);
+        }
+
+        .calendar-day.empty {
+            background: transparent;
+            cursor: default;
+        }
+
+        .calendar-header {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 5px;
+            margin-bottom: 10px;
+            text-align: center;
+            font-weight: 600;
+            color: #666;
+        }
+
+        .month-nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .month-nav button {
+            background: #667eea;
+            color: white;
+            border: none;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 1.2rem;
+            transition: all 0.2s;
+        }
+
+        .month-nav button:hover {
+            transform: scale(1.1);
+        }
+
+        .month-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .records-list {
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .record-item {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .record-info {
+            flex: 1;
+        }
+
+        .record-project {
+            font-weight: 600;
+            color: #333;
+        }
+
+        .record-date {
+            font-size: 0.9rem;
+            color: #666;
+        }
+
+        .record-value {
+            font-size: 1.2rem;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .record-item .action-btns {
+            flex-shrink: 0;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #999;
+        }
+
+        .empty-state i {
+            font-size: 4rem;
+            margin-bottom: 15px;
+            opacity: 0.5;
+        }
+
+        .badge {
+            position: absolute;
+            top: 2px;
+            right: 2px;
+            width: 8px;
+            height: 8px;
+            background: #28a745;
+            border-radius: 50%;
+        }
+
+        .backup-section {
+            margin-top: 20px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 15px;
+        }
+
+        .backup-section h3 {
+            margin-bottom: 15px;
+            color: #333;
+        }
+
+        .backup-btns {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .backup-btn {
+            flex: 1;
+            min-width: 140px;
+            padding: 15px 20px;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            transition: all 0.3s;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .backup-btn .icon {
+            font-size: 1.5rem;
+        }
+
+        .export-btn {
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+            color: white;
+        }
+
+        .export-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(40, 167, 69, 0.4);
+        }
+
+        .import-btn {
+            background: linear-gradient(135deg, #17a2b8 0%, #6f42c1 100%);
+            color: white;
+        }
+
+        .import-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(111, 66, 193, 0.4);
+        }
+
+        .backup-info {
+            margin-top: 15px;
+            padding: 15px;
+            background: white;
+            border-radius: 10px;
+            font-size: 0.9rem;
+            color: #666;
+        }
+
+        .backup-info p {
+            margin: 5px 0;
+        }
+
+        #importFile {
+            display: none;
+        }
+
+        .toast {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #333;
+            color: white;
+            padding: 15px 30px;
+            border-radius: 10px;
+            z-index: 2000;
+            animation: toastIn 0.3s ease;
+        }
+
+        .toast.success {
+            background: #28a745;
+        }
+
+        .toast.error {
+            background: #dc3545;
+        }
+
+        @keyframes toastIn {
+            from {
+                opacity: 0;
+                transform: translateX(-50%) translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(-50%) translateY(0);
+            }
+        }
+
+        /* 6.8 寸屏幕适配 (约 412px 宽度) */
+        @media (max-width: 768px) {
+            body {
+                padding: 10px;
+            }
+
+            header h1 {
+                font-size: 1.8rem;
+            }
+
+            header p {
+                font-size: 0.95rem;
+            }
+
+            .tabs {
+                gap: 6px;
+            }
+
+            .tab-btn {
+                padding: 10px 14px;
+                font-size: 0.85rem;
+            }
+
+            .tab-content {
+                padding: 15px;
+                border-radius: 15px;
+            }
+
+            .section h2 {
+                font-size: 1.2rem;
+            }
+
+            .add-btn {
+                padding: 10px 16px;
+                font-size: 0.85rem;
+                width: 100%;
+                margin-bottom: 15px;
+            }
+
+            table th,
+            table td {
+                padding: 10px 8px;
+                font-size: 0.85rem;
+            }
+
+            .action-btns {
+                flex-direction: row;
+                gap: 5px;
+            }
+
+            .action-btn {
+                padding: 6px 10px;
+                font-size: 0.75rem;
+            }
+
+            .stats-grid {
+                grid-template-columns: repeat(2, 1fr);
+                gap: 10px;
+            }
+
+            .stat-card {
+                padding: 15px;
+            }
+
+            .stat-value {
+                font-size: 1.8rem;
+            }
+
+            .stat-label {
+                font-size: 0.8rem;
+            }
+
+            .summary-tabs {
+                gap: 6px;
+            }
+
+            .summary-tab {
+                padding: 8px 14px;
+                font-size: 0.8rem;
+            }
+
+            .calendar-container {
+                gap: 3px;
+            }
+
+            .calendar-day {
+                font-size: 0.8rem;
+            }
+
+            .calendar-header {
+                font-size: 0.75rem;
+            }
+
+            .month-nav button {
+                width: 36px;
+                height: 36px;
+                font-size: 1rem;
+            }
+
+            .month-title {
+                font-size: 1.2rem;
+            }
+
+            .record-item {
+                padding: 12px;
+                flex-wrap: wrap;
+            }
+
+            .record-item .action-btns {
+                width: 100%;
+                justify-content: flex-end;
+                margin-top: 8px;
+            }
+
+            .record-project {
+                font-size: 0.95rem;
+            }
+
+            .record-value {
+                font-size: 1rem;
+            }
+
+            .modal-content {
+                padding: 20px;
+                margin: 10px;
+            }
+
+            .modal-title {
+                font-size: 1.2rem;
+            }
+
+            .form-group input,
+            .form-group select {
+                padding: 12px;
+                font-size: 16px;
+            }
+
+            .btn-group button {
+                padding: 12px;
+            }
+
+            .backup-btns {
+                flex-direction: column;
+            }
+
+            .backup-btn {
+                padding: 12px;
+            }
+
+            .empty-state {
+                padding: 30px 15px;
+            }
+
+            .records-list {
+                max-height: 300px;
+            }
+        }
+
+        /* 更小屏幕优化 */
+        @media (max-width: 380px) {
+            header h1 {
+                font-size: 1.5rem;
+            }
+
+            .tab-btn {
+                padding: 8px 10px;
+                font-size: 0.75rem;
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr 1fr;
+                gap: 8px;
+            }
+
+            .stat-value {
+                font-size: 1.5rem;
+            }
+
+            table th,
+            table td {
+                padding: 8px 5px;
+                font-size: 0.75rem;
+            }
+        }
+
+        /* 秒表和倒计时样式 */
+        .timer-section {
+            display: flex;
+            flex-direction: column;
+            gap: 30px;
+        }
+
+        .timer-box {
+            background: #f8f9fa;
+            border-radius: 20px;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .timer-box h3 {
+            margin-bottom: 20px;
+            color: #333;
+            font-size: 1.3rem;
+        }
+
+        .timer-display {
+            font-size: 3.5rem;
+            font-weight: bold;
+            color: #667eea;
+            font-family: 'Courier New', monospace;
+            margin: 20px 0;
+            letter-spacing: 2px;
+        }
+
+        .timer-controls {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .timer-btn {
+            padding: 15px 30px;
+            border: none;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            min-width: 100px;
+        }
+
+        .timer-btn.start {
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+            color: white;
+        }
+
+        .timer-btn.pause {
+            background: linear-gradient(135deg, #ffc107 0%, #fd7e14 100%);
+            color: #333;
+        }
+
+        .timer-btn.reset {
+            background: linear-gradient(135deg, #dc3545 0%, #c82333 100%);
+            color: white;
+        }
+
+        .timer-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        .timer-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .countdown-input {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+        }
+
+        .countdown-input input {
+            width: 80px;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 1.2rem;
+            text-align: center;
+        }
+
+        .countdown-input label {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .countdown-input label span {
+            font-size: 0.8rem;
+            color: #666;
+        }
+
+        .wake-lock-status {
+            margin-top: 15px;
+            padding: 10px;
+            background: white;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            color: #666;
+        }
+
+        .wake-lock-status.active {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .wake-lock-status.inactive {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        @media (max-width: 768px) {
+            .timer-box {
+                padding: 20px;
+            }
+
+            .timer-display {
+                font-size: 2.5rem;
+            }
+
+            .timer-btn {
+                padding: 12px 20px;
+                font-size: 0.9rem;
+                min-width: 80px;
+            }
+
+            .countdown-input input {
+                width: 60px;
+                padding: 10px;
+                font-size: 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🏃 运动打卡</h1>
+            <p>记录每一次运动，成就更好的自己</p>
+        </header>
+
+        <div class="tabs">
+            <button class="tab-btn active" data-tab="checkin">今日打卡</button>
+            <button class="tab-btn" data-tab="projects">项目管理</button>
+            <button class="tab-btn" data-tab="summary">统计汇总</button>
+            <button class="tab-btn" data-tab="calendar">打卡日历</button>
+            <button class="tab-btn" data-tab="timer">计时器</button>
+            <button class="tab-btn" data-tab="settings">设置</button>
+        </div>
+
+        <div class="tab-content">
+            <!-- 今日打卡 -->
+            <div id="checkin" class="section active">
+                <h2>📅 今日打卡</h2>
+                <button class="add-btn" onclick="openCheckinModal()">+ 添加打卡记录</button>
+                
+                <div class="records-list" id="todayRecords">
+                    <div class="empty-state">
+                        <i>📝</i>
+                        <p>今日暂无打卡记录</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 项目管理 -->
+            <div id="projects" class="section">
+                <h2>⚽ 运动项目管理</h2>
+                <button class="add-btn" onclick="openProjectModal()">+ 添加运动项目</button>
+                
+                <table>
+                    <thead>
+                        <tr>
+                            <th>项目名称</th>
+                            <th>单位</th>
+                            <th>操作</th>
+                        </tr>
+                    </thead>
+                    <tbody id="projectsTable">
+                        <tr>
+                            <td colspan="3" class="empty-state">暂无运动项目</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- 统计汇总 -->
+            <div id="summary" class="section">
+                <h2>📊 统计汇总</h2>
+                <div class="summary-tabs">
+                    <button class="summary-tab active" data-period="day">今日</button>
+                    <button class="summary-tab" data-period="week">本周</button>
+                    <button class="summary-tab" data-period="month">本月</button>
+                    <button class="summary-tab" data-period="year">本年</button>
+                </div>
+
+                <div class="stats-grid" id="statsGrid">
+                    <div class="stat-card">
+                        <div class="stat-value" id="totalRecords">0</div>
+                        <div class="stat-label">打卡次数</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="totalMinutes">0</div>
+                        <div class="stat-label">运动分钟</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="totalCount">0</div>
+                        <div class="stat-label">运动次数</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-value" id="activeDays">0</div>
+                        <div class="stat-label">活跃天数</div>
+                    </div>
+                </div>
+
+                <h3>项目明细</h3>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>项目名称</th>
+                            <th>总时长 (分钟)</th>
+                            <th>总次数</th>
+                        </tr>
+                    </thead>
+                    <tbody id="summaryTable">
+                        <tr>
+                            <td colspan="3" class="empty-state">暂无数据</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- 打卡日历 -->
+            <div id="calendar" class="section">
+                <h2>📆 打卡日历</h2>
+                <div class="month-nav">
+                    <button onclick="prevMonth()">←</button>
+                    <div class="month-title" id="calendarTitle"></div>
+                    <button onclick="nextMonth()">→</button>
+                </div>
+                <div class="calendar-header">
+                    <div>日</div>
+                    <div>一</div>
+                    <div>二</div>
+                    <div>三</div>
+                    <div>四</div>
+                    <div>五</div>
+                    <div>六</div>
+                </div>
+                <div class="calendar-container" id="calendarContainer"></div>
+                <div id="dayRecords" style="margin-top: 20px;">
+                    <h3 id="selectedDateTitle"></h3>
+                    <div id="selectedDateRecords" class="records-list"></div>
+                </div>
+            </div>
+
+            <!-- 计时器 -->
+            <div id="timer" class="section">
+                <h2>⏱️ 计时器</h2>
+                
+                <div class="timer-section">
+                    <div class="timer-box">
+                        <h3>秒表</h3>
+                        <div class="timer-display" id="stopwatchDisplay">00:00:00</div>
+                        <div class="timer-controls">
+                            <button class="timer-btn start" id="stopwatchStart" onclick="startStopwatch()">开始</button>
+                            <button class="timer-btn pause" id="stopwatchPause" onclick="pauseStopwatch()" disabled>暂停</button>
+                            <button class="timer-btn reset" id="stopwatchReset" onclick="resetStopwatch()">重置</button>
+                        </div>
+                        <div class="wake-lock-status" id="stopwatchWakeStatus">屏幕保持：未激活</div>
+                    </div>
+
+                    <div class="timer-box">
+                        <h3>倒计时</h3>
+                        <div class="countdown-input" id="countdownInput">
+                            <label>
+                                <input type="number" id="countdownHours" min="0" max="99" value="0">
+                                <span>小时</span>
+                            </label>
+                            <label>
+                                <input type="number" id="countdownMinutes" min="0" max="59" value="5">
+                                <span>分钟</span>
+                            </label>
+                            <label>
+                                <input type="number" id="countdownSeconds" min="0" max="59" value="0">
+                                <span>秒</span>
+                            </label>
+                        </div>
+                        <div class="timer-display" id="countdownDisplay">00:05:00</div>
+                        <div class="timer-controls">
+                            <button class="timer-btn start" id="countdownStart" onclick="startCountdown()">开始</button>
+                            <button class="timer-btn pause" id="countdownPause" onclick="pauseCountdown()" disabled>暂停</button>
+                            <button class="timer-btn reset" id="countdownReset" onclick="resetCountdown()">重置</button>
+                        </div>
+                        <div class="wake-lock-status" id="countdownWakeStatus">屏幕保持：未激活</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 设置 -->
+            <div id="settings" class="section">
+                <h2>⚙️ 设置</h2>
+                
+                <div class="backup-section">
+                    <h3>数据备份</h3>
+                    <div class="backup-btns">
+                        <button class="backup-btn export-btn" onclick="exportData()">
+                            <span class="icon">📤</span>
+                            <span>导出备份</span>
+                        </button>
+                        <button class="backup-btn import-btn" onclick="document.getElementById('importFile').click()">
+                            <span class="icon">📥</span>
+                            <span>导入备份</span>
+                        </button>
+                        <input type="file" id="importFile" accept=".json" onchange="importData(event)">
+                    </div>
+                    <div class="backup-info">
+                        <p><strong>导出备份：</strong>将所有运动项目和打卡记录导出为 JSON 文件，保存到本地。</p>
+                        <p><strong>导入备份：</strong>从 JSON 文件恢复数据，将覆盖当前所有数据。</p>
+                    </div>
+                </div>
+
+                <div class="backup-section">
+                    <h3>项目备份</h3>
+                    <div class="backup-btns">
+                        <button class="backup-btn" style="background: linear-gradient(135deg, #17a2b8 0%, #6f42c1 100%); color: white;" onclick="exportProjects()">
+                            <span class="icon">📋</span>
+                            <span>导出项目</span>
+                        </button>
+                        <button class="backup-btn" style="background: linear-gradient(135deg, #fd7e14 0%, #e83e8c 100%); color: white;" onclick="document.getElementById('importProjectFile').click()">
+                            <span class="icon">📥</span>
+                            <span>导入项目</span>
+                        </button>
+                        <input type="file" id="importProjectFile" accept=".json" onchange="importProjects(event)">
+                    </div>
+                    <div class="backup-info">
+                        <p><strong>导出项目：</strong>将所有运动项目导出为 JSON 文件，保存到本地。</p>
+                        <p><strong>导入项目：</strong>从 JSON 文件导入运动项目，不会覆盖现有项目，仅添加新项目。</p>
+                    </div>
+                </div>
+
+                <div class="backup-section">
+                    <h3>数据统计</h3>
+                    <div class="backup-info">
+                        <p>运动项目：<strong id="projectCount">0</strong> 个</p>
+                        <p>打卡记录：<strong id="recordCount">0</strong> 条</p>
+                        <p>数据存储：浏览器本地存储 (localStorage)</p>
+                    </div>
+                </div>
+
+                <div class="backup-section">
+                    <h3>清除数据</h3>
+                    <div class="backup-btns">
+                        <button class="backup-btn" style="background: linear-gradient(135deg, #dc3545 0%, #c82333 100%); color: white;" onclick="clearAllData()">
+                            <span class="icon">🗑️</span>
+                            <span>清除所有数据</span>
+                        </button>
+                    </div>
+                    <div class="backup-info">
+                        <p style="color: #dc3545;">⚠️ 警告：此操作将清除所有运动项目和打卡记录，且无法恢复！</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 项目弹窗 -->
+    <div class="modal" id="projectModal">
+        <div class="modal-content">
+            <span class="close-btn" onclick="closeProjectModal()">&times;</span>
+            <h2 class="modal-title" id="projectModalTitle">添加运动项目</h2>
+            <form id="projectForm">
+                <input type="hidden" id="projectId">
+                <div class="form-group">
+                    <label>项目名称</label>
+                    <input type="text" id="projectName" required placeholder="如：跑步、游泳、瑜伽">
+                </div>
+                <div class="form-group">
+                    <label>单位类型</label>
+                    <select id="projectUnit" required>
+                        <option value="minutes">分钟</option>
+                        <option value="count">次数</option>
+                    </select>
+                </div>
+                <div class="btn-group">
+                    <button type="button" class="btn-cancel" onclick="closeProjectModal()">取消</button>
+                    <button type="submit" class="btn-confirm">保存</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- 打卡弹窗 -->
+    <div class="modal" id="checkinModal">
+        <div class="modal-content">
+            <span class="close-btn" onclick="closeCheckinModal()">&times;</span>
+            <h2 class="modal-title">添加打卡记录</h2>
+            <form id="checkinForm">
+                <input type="hidden" id="checkinId">
+                <div class="form-group">
+                    <label>选择项目</label>
+                    <select id="checkinProject" required>
+                        <option value="">请选择项目</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>数量</label>
+                    <input type="number" id="checkinValue" required min="1" placeholder="输入运动数量">
+                </div>
+                <div class="form-group">
+                    <label>日期（补打卡）</label>
+                    <input type="date" id="checkinDate">
+                </div>
+                <div class="btn-group">
+                    <button type="button" class="btn-cancel" onclick="closeCheckinModal()">取消</button>
+                    <button type="submit" class="btn-confirm">打卡</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        const STORAGE_PROJECTS = 'sports_projects';
+        const STORAGE_RECORDS = 'sports_records';
+
+        let currentCalendarYear = new Date().getFullYear();
+        let currentCalendarMonth = new Date().getMonth();
+
+        // 秒表和倒计时变量
+        let stopwatchInterval = null;
+        let stopwatchTime = 0;
+        let stopwatchRunning = false;
+
+        let countdownInterval = null;
+        let countdownTime = 0;
+        let countdownRunning = false;
+        let countdownInitialTime = 300;
+
+        // Wake Lock 变量
+        let wakeLock = null;
+        let wakeLockSupported = 'wakeLock' in navigator;
+
+        // Wake Lock API - 防止屏幕熄屏
+        async function requestWakeLock() {
+            if (!wakeLockSupported) {
+                console.warn('当前浏览器不支持 Wake Lock API，无法防止屏幕熄屏');
+                showToast('提示：当前浏览器不支持屏幕保持功能', 'info');
+                return;
+            }
+            
+            if (wakeLock) {
+                return; // 已经有唤醒锁了
+            }
+            
+            try {
+                wakeLock = await navigator.wakeLock.request('screen');
+                console.log('Wake Lock 已激活');
+                updateWakeLockStatus(true);
+                
+                wakeLock.addEventListener('release', () => {
+                    console.log('Wake Lock 已释放');
+                    wakeLock = null;
+                    // 如果计时器仍在运行，尝试重新获取唤醒锁
+                    if ((stopwatchRunning || countdownRunning) && document.visibilityState === 'visible') {
+                        setTimeout(requestWakeLock, 1000);
+                    } else {
+                        updateWakeLockStatus(false);
+                    }
+                });
+            } catch (err) {
+                console.error('Wake Lock 请求失败:', err);
+                updateWakeLockStatus(false);
+                
+                // 常见错误处理
+                if (err.name === 'NotAllowedError') {
+                    showToast('请在交互后开始计时器以启用屏幕保持', 'warning');
+                } else if (err.name === 'NotSupportedError') {
+                    wakeLockSupported = false;
+                    showToast('当前浏览器不支持屏幕保持功能', 'info');
+                }
+            }
+        }
+
+        async function releaseWakeLock() {
+            if (wakeLock) {
+                try {
+                    await wakeLock.release();
+                    wakeLock = null;
+                    updateWakeLockStatus(false);
+                } catch (err) {
+                    console.error('Wake Lock 释放失败:', err);
+                }
+            }
+        }
+
+        function updateWakeLockStatus(active) {
+            const stopwatchStatus = document.getElementById('stopwatchWakeStatus');
+            const countdownStatus = document.getElementById('countdownWakeStatus');
+            
+            if (stopwatchRunning) {
+                stopwatchStatus.textContent = active ? '📱 屏幕保持：已激活' : '📱 屏幕保持：未激活';
+                stopwatchStatus.className = 'wake-lock-status ' + (active ? 'active' : 'inactive');
+            }
+            
+            if (countdownRunning) {
+                countdownStatus.textContent = active ? '📱 屏幕保持：已激活' : '📱 屏幕保持：未激活';
+                countdownStatus.className = 'wake-lock-status ' + (active ? 'active' : 'inactive');
+            }
+        }
+
+        document.addEventListener('visibilitychange', async () => {
+            if (document.visibilityState === 'visible' && (stopwatchRunning || countdownRunning)) {
+                await requestWakeLock();
+            }
+        });
+
+        // 页面焦点变化时也尝试重新获取唤醒锁
+        document.addEventListener('focus', async () => {
+            if ((stopwatchRunning || countdownRunning)) {
+                await requestWakeLock();
+            }
+        });
+
+        function formatTime(seconds) {
+            const hrs = Math.floor(seconds / 3600);
+            const mins = Math.floor((seconds % 3600) / 60);
+            const secs = seconds % 60;
+            return `${String(hrs).padStart(2, '0')}:${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+        }
+
+        function startStopwatch() {
+            if (stopwatchRunning) return;
+            
+            stopwatchRunning = true;
+            requestWakeLock();
+            
+            document.getElementById('stopwatchStart').disabled = true;
+            document.getElementById('stopwatchPause').disabled = false;
+            
+            stopwatchInterval = setInterval(() => {
+                stopwatchTime++;
+                document.getElementById('stopwatchDisplay').textContent = formatTime(stopwatchTime);
+            }, 1000);
+        }
+
+        function pauseStopwatch() {
+            if (!stopwatchRunning) return;
+            
+            stopwatchRunning = false;
+            clearInterval(stopwatchInterval);
+            
+            if (!countdownRunning) {
+                releaseWakeLock();
+            }
+            
+            document.getElementById('stopwatchStart').disabled = false;
+            document.getElementById('stopwatchPause').disabled = true;
+            document.getElementById('stopwatchStart').textContent = stopwatchTime > 0 ? '继续' : '开始';
+        }
+
+        function resetStopwatch() {
+            stopwatchRunning = false;
+            clearInterval(stopwatchInterval);
+            stopwatchTime = 0;
+            
+            if (!countdownRunning) {
+                releaseWakeLock();
+            }
+            
+            document.getElementById('stopwatchDisplay').textContent = '00:00:00';
+            document.getElementById('stopwatchStart').disabled = false;
+            document.getElementById('stopwatchStart').textContent = '开始';
+            document.getElementById('stopwatchPause').disabled = true;
+            document.getElementById('stopwatchWakeStatus').textContent = '屏幕保持：未激活';
+            document.getElementById('stopwatchWakeStatus').className = 'wake-lock-status';
+        }
+
+        function updateCountdownDisplay() {
+            document.getElementById('countdownDisplay').textContent = formatTime(countdownTime);
+        }
+
+        function startCountdown() {
+            if (countdownRunning) return;
+            
+            if (countdownTime === 0) {
+                const hours = parseInt(document.getElementById('countdownHours').value) || 0;
+                const minutes = parseInt(document.getElementById('countdownMinutes').value) || 0;
+                const seconds = parseInt(document.getElementById('countdownSeconds').value) || 0;
+                countdownTime = hours * 3600 + minutes * 60 + seconds;
+                countdownInitialTime = countdownTime;
+                
+                if (countdownTime === 0) {
+                    showToast('请设置倒计时时间！', 'error');
+                    return;
+                }
+            }
+            
+            countdownRunning = true;
+            requestWakeLock();
+            
+            document.getElementById('countdownStart').disabled = true;
+            document.getElementById('countdownPause').disabled = false;
+            document.getElementById('countdownInput').style.display = 'none';
+            
+            countdownInterval = setInterval(() => {
+                countdownTime--;
+                updateCountdownDisplay();
+                
+                if (countdownTime === 0) {
+                    clearInterval(countdownInterval);
+                    countdownRunning = false;
+                    
+                    if (!stopwatchRunning) {
+                        releaseWakeLock();
+                    }
+                    
+                    document.getElementById('countdownStart').disabled = false;
+                    document.getElementById('countdownStart').textContent = '开始';
+                    document.getElementById('countdownPause').disabled = true;
+                    document.getElementById('countdownInput').style.display = 'flex';
+                    document.getElementById('countdownWakeStatus').textContent = '屏幕保持：未激活';
+                    document.getElementById('countdownWakeStatus').className = 'wake-lock-status';
+                    
+                    showToast('倒计时结束！', 'success');
+                    
+                    try {
+                        const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                        const oscillator = audioContext.createOscillator();
+                        const gainNode = audioContext.createGain();
+                        
+                        oscillator.connect(gainNode);
+                        gainNode.connect(audioContext.destination);
+                        
+                        oscillator.frequency.value = 800;
+                        oscillator.type = 'sine';
+                        gainNode.gain.value = 0.3;
+                        
+                        oscillator.start();
+                        setTimeout(() => oscillator.stop(), 500);
+                    } catch (e) {
+                        console.log('无法播放提示音');
+                    }
+                }
+            }, 1000);
+        }
+
+        function pauseCountdown() {
+            if (!countdownRunning) return;
+            
+            countdownRunning = false;
+            clearInterval(countdownInterval);
+            
+            if (!stopwatchRunning) {
+                releaseWakeLock();
+            }
+            
+            document.getElementById('countdownStart').disabled = false;
+            document.getElementById('countdownStart').textContent = '继续';
+            document.getElementById('countdownPause').disabled = true;
+        }
+
+        function resetCountdown() {
+            countdownRunning = false;
+            clearInterval(countdownInterval);
+            
+            const hours = parseInt(document.getElementById('countdownHours').value) || 0;
+            const minutes = parseInt(document.getElementById('countdownMinutes').value) || 5;
+            const seconds = parseInt(document.getElementById('countdownSeconds').value) || 0;
+            countdownTime = hours * 3600 + minutes * 60 + seconds;
+            countdownInitialTime = countdownTime;
+            
+            if (!stopwatchRunning) {
+                releaseWakeLock();
+            }
+            
+            updateCountdownDisplay();
+            document.getElementById('countdownStart').disabled = false;
+            document.getElementById('countdownStart').textContent = '开始';
+            document.getElementById('countdownPause').disabled = true;
+            document.getElementById('countdownInput').style.display = 'flex';
+            document.getElementById('countdownWakeStatus').textContent = '屏幕保持：未激活';
+            document.getElementById('countdownWakeStatus').className = 'wake-lock-status';
+        }
+
+        document.getElementById('countdownHours').addEventListener('input', () => {
+            if (!countdownRunning) {
+                const hours = parseInt(document.getElementById('countdownHours').value) || 0;
+                const minutes = parseInt(document.getElementById('countdownMinutes').value) || 0;
+                const seconds = parseInt(document.getElementById('countdownSeconds').value) || 0;
+                countdownTime = hours * 3600 + minutes * 60 + seconds;
+                updateCountdownDisplay();
+            }
+        });
+
+        document.getElementById('countdownMinutes').addEventListener('input', () => {
+            if (!countdownRunning) {
+                const hours = parseInt(document.getElementById('countdownHours').value) || 0;
+                const minutes = parseInt(document.getElementById('countdownMinutes').value) || 0;
+                const seconds = parseInt(document.getElementById('countdownSeconds').value) || 0;
+                countdownTime = hours * 3600 + minutes * 60 + seconds;
+                updateCountdownDisplay();
+            }
+        });
+
+        document.getElementById('countdownSeconds').addEventListener('input', () => {
+            if (!countdownRunning) {
+                const hours = parseInt(document.getElementById('countdownHours').value) || 0;
+                const minutes = parseInt(document.getElementById('countdownMinutes').value) || 0;
+                const seconds = parseInt(document.getElementById('countdownSeconds').value) || 0;
+                countdownTime = hours * 3600 + minutes * 60 + seconds;
+                updateCountdownDisplay();
+            }
+        });
+
+        function getProjects() {
+            const data = localStorage.getItem(STORAGE_PROJECTS);
+            return data ? JSON.parse(data) : [
+                { id: 1, name: '跑步', unit: 'minutes' },
+                { id: 2, name: '游泳', unit: 'minutes' },
+                { id: 3, name: '俯卧撑', unit: 'count' },
+                { id: 4, name: '仰卧起坐', unit: 'count' },
+                { id: 5, name: '瑜伽', unit: 'minutes' },
+                { id: 6, name: '跳绳', unit: 'count' }
+            ];
+        }
+
+        function saveProjects(projects) {
+            localStorage.setItem(STORAGE_PROJECTS, JSON.stringify(projects));
+        }
+
+        function getRecords() {
+            const data = localStorage.getItem(STORAGE_RECORDS);
+            return data ? JSON.parse(data) : [];
+        }
+
+        function saveRecords(records) {
+            localStorage.setItem(STORAGE_RECORDS, JSON.stringify(records));
+        }
+
+        function formatDate(date) {
+            const year = date.getFullYear();
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const day = String(date.getDate()).padStart(2, '0');
+            return `${year}-${month}-${day}`;
+        }
+
+        function showToast(message, type = 'success') {
+            const toast = document.createElement('div');
+            toast.className = `toast ${type}`;
+            toast.textContent = message;
+            document.body.appendChild(toast);
+            setTimeout(() => {
+                toast.remove();
+            }, 3000);
+        }
+
+        async function exportData() {
+            const projects = getProjects();
+            const records = getRecords();
+            
+            if (projects.length === 0 && records.length === 0) {
+                showToast('暂无数据可导出！', 'error');
+                return;
+            }
+            
+            const data = {
+                version: '1.0',
+                exportDate: new Date().toISOString(),
+                projects: projects,
+                records: records
+            };
+            
+            const content = JSON.stringify(data, null, 2);
+            const dateStr = formatDate(new Date()).replace(/-/g, '');
+            const defaultFileName = `运动打卡备份_${dateStr}.json`;
+            
+            // 尝试使用 File System Access API 让用户选择保存位置
+            if ('showSaveFilePicker' in window) {
+                try {
+                    const handle = await window.showSaveFilePicker({
+                        suggestedName: defaultFileName,
+                        types: [
+                            {
+                                description: 'JSON 文件',
+                                accept: { 'application/json': ['.json'] }
+                            }
+                        ]
+                    });
+                    
+                    const writable = await handle.createWritable();
+                    await writable.write(content);
+                    await writable.close();
+                    
+                    showToast('备份导出成功！', 'success');
+                } catch (error) {
+                    // 用户取消了保存操作或发生错误
+                    if (error.name !== 'AbortError') {
+                        console.error('导出失败:', error);
+                        // 降级到传统下载方式
+                        downloadFile(content, defaultFileName);
+                    }
+                }
+            } else {
+                // 浏览器不支持 File System Access API，使用传统下载方式
+                downloadFile(content, defaultFileName);
+            }
+        }
+
+        async function exportProjects() {
+            const projects = getProjects();
+            
+            if (projects.length === 0) {
+                showToast('暂无运动项目可导出！', 'error');
+                return;
+            }
+            
+            const data = {
+                version: '1.0',
+                exportDate: new Date().toISOString(),
+                type: 'projects',
+                projects: projects
+            };
+            
+            const content = JSON.stringify(data, null, 2);
+            const dateStr = formatDate(new Date()).replace(/-/g, '');
+            const defaultFileName = `运动项目备份_${dateStr}.json`;
+            
+            // 尝试使用 File System Access API 让用户选择保存位置
+            if ('showSaveFilePicker' in window) {
+                try {
+                    const handle = await window.showSaveFilePicker({
+                        suggestedName: defaultFileName,
+                        types: [
+                            {
+                                description: 'JSON 文件',
+                                accept: { 'application/json': ['.json'] }
+                            }
+                        ]
+                    });
+                    
+                    const writable = await handle.createWritable();
+                    await writable.write(content);
+                    await writable.close();
+                    
+                    showToast('项目导出成功！', 'success');
+                } catch (error) {
+                    // 用户取消了保存操作或发生错误
+                    if (error.name !== 'AbortError') {
+                        console.error('导出失败:', error);
+                        // 降级到传统下载方式
+                        downloadFile(content, defaultFileName);
+                    }
+                }
+            } else {
+                // 浏览器不支持 File System Access API，使用传统下载方式
+                downloadFile(content, defaultFileName);
+            }
+        }
+        
+        function downloadFile(content, fileName) {
+            const blob = new Blob([content], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = fileName;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            showToast('项目导出成功！', 'success');
+        }
+
+        function importProjects(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const data = JSON.parse(e.target.result);
+                    
+                    if (!data.projects) {
+                        showToast('无效的项目备份文件格式！', 'error');
+                        return;
+                    }
+                    
+                    const existingProjects = getProjects();
+                    const existingNames = new Set(existingProjects.map(p => p.name));
+                    const newProjects = data.projects.filter(p => !existingNames.has(p.name));
+                    
+                    if (newProjects.length === 0) {
+                        showToast('没有新的项目可以导入！', 'error');
+                        return;
+                    }
+                    
+                    if (!confirm(`确定要导入项目吗？\n\n将添加 ${newProjects.length} 个新运动项目（已存在的项目将被跳过）。`)) {
+                        return;
+                    }
+                    
+                    // 为新项目分配新的 ID
+                    const maxId = existingProjects.length > 0 ? Math.max(...existingProjects.map(p => p.id)) : 0;
+                    newProjects.forEach((p, index) => {
+                        p.id = maxId + index + 1;
+                    });
+                    
+                    const updatedProjects = [...existingProjects, ...newProjects];
+                    saveProjects(updatedProjects);
+                    
+                    renderProjectsTable();
+                    renderCheckinProjects();
+                    renderSummary(document.querySelector('.summary-tab.active').dataset.period);
+                    updateSettingsStats();
+                    
+                    showToast(`成功导入 ${newProjects.length} 个项目！`, 'success');
+                } catch (error) {
+                    showToast('导入失败：文件格式错误！', 'error');
+                }
+            };
+            reader.readAsText(file);
+            event.target.value = '';
+        }
+
+        function importData(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const data = JSON.parse(e.target.result);
+                    
+                    if (!data.projects || !data.records) {
+                        showToast('无效的备份文件格式！', 'error');
+                        return;
+                    }
+                    
+                    if (!confirm(`确定要导入备份吗？\n\n将导入 ${data.projects.length} 个运动项目和 ${data.records.length} 条打卡记录。\n\n注意：这将覆盖当前所有数据！`)) {
+                        return;
+                    }
+                    
+                    saveProjects(data.projects);
+                    saveRecords(data.records);
+                    
+                    renderTodayRecords();
+                    renderProjectsTable();
+                    renderCheckinProjects();
+                    renderCalendar(currentCalendarYear, currentCalendarMonth);
+                    renderSummary(document.querySelector('.summary-tab.active').dataset.period);
+                    updateSettingsStats();
+                    
+                    showToast('备份导入成功！', 'success');
+                } catch (error) {
+                    showToast('导入失败：文件格式错误！', 'error');
+                }
+            };
+            reader.readAsText(file);
+            event.target.value = '';
+        }
+
+        function clearAllData() {
+            if (!confirm('确定要清除所有数据吗？\n\n此操作不可恢复！建议先导出备份。')) {
+                return;
+            }
+            
+            if (!confirm('再次确认：真的要清除所有数据吗？')) {
+                return;
+            }
+            
+            localStorage.removeItem(STORAGE_PROJECTS);
+            localStorage.removeItem(STORAGE_RECORDS);
+            
+            renderTodayRecords();
+            renderProjectsTable();
+            renderCheckinProjects();
+            renderCalendar(currentCalendarYear, currentCalendarMonth);
+            renderSummary(document.querySelector('.summary-tab.active').dataset.period);
+            updateSettingsStats();
+            
+            showToast('所有数据已清除！', 'success');
+        }
+
+        function updateSettingsStats() {
+            const projects = getProjects();
+            const records = getRecords();
+            document.getElementById('projectCount').textContent = projects.length;
+            document.getElementById('recordCount').textContent = records.length;
+        }
+
+        function parseDate(dateStr) {
+            const parts = dateStr.split('-');
+            return new Date(parseInt(parts[0]), parseInt(parts[1]) - 1, parseInt(parts[2]));
+        }
+
+        function getToday() {
+            return formatDate(new Date());
+        }
+
+        function getWeekDays(date) {
+            const d = new Date(date);
+            const day = d.getDay();
+            const diff = d.getDate() - day + (day === 0 ? -6 : 1);
+            const monday = new Date(d.setDate(diff));
+            const days = [];
+            for (let i = 0; i < 7; i++) {
+                days.push(formatDate(new Date(monday.getTime() + i * 86400000)));
+            }
+            return days;
+        }
+
+        function getMonthDays(year, month) {
+            const days = [];
+            const firstDay = new Date(year, month, 1);
+            const lastDay = new Date(year, month + 1, 0);
+            const startPadding = firstDay.getDay();
+            
+            for (let i = 0; i < startPadding; i++) {
+                days.push(null);
+            }
+            
+            for (let i = 1; i <= lastDay.getDate(); i++) {
+                days.push(`${year}-${String(month + 1).padStart(2, '0')}-${String(i).padStart(2, '0')}`);
+            }
+            
+            return days;
+        }
+
+        function getYearMonths(year) {
+            const months = [];
+            for (let i = 0; i < 12; i++) {
+                months.push(`${year}-${String(i + 1).padStart(2, '0')}`);
+            }
+            return months;
+        }
+
+        function isToday(dateStr) {
+            return dateStr === getToday();
+        }
+
+        function hasRecords(dateStr) {
+            const records = getRecords();
+            return records.some(r => r.date === dateStr);
+        }
+
+        function getRecordsByDate(dateStr) {
+            const records = getRecords();
+            const projects = getProjects();
+            return records
+                .filter(r => r.date === dateStr)
+                .map(r => {
+                    const project = projects.find(p => p.id === r.projectId);
+                    return { ...r, project };
+                });
+        }
+
+        function getRecordsByPeriod(period) {
+            const records = getRecords();
+            const today = new Date();
+            let startDate, endDate;
+
+            switch (period) {
+                case 'day':
+                    startDate = endDate = today;
+                    break;
+                case 'week':
+                    const weekDays = getWeekDays(today);
+                    startDate = parseDate(weekDays[0]);
+                    endDate = parseDate(weekDays[6]);
+                    break;
+                case 'month':
+                    startDate = new Date(today.getFullYear(), today.getMonth(), 1);
+                    endDate = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+                    break;
+                case 'year':
+                    startDate = new Date(today.getFullYear(), 0, 1);
+                    endDate = new Date(today.getFullYear(), 11, 31);
+                    break;
+            }
+
+            const startStr = formatDate(startDate);
+            const endStr = formatDate(endDate);
+
+            return records.filter(r => r.date >= startStr && r.date <= endStr);
+        }
+
+        function calculateStats(records) {
+            const projects = getProjects();
+            const stats = {
+                totalRecords: records.length,
+                totalMinutes: 0,
+                totalCount: 0,
+                activeDays: new Set(records.map(r => r.date)).size,
+                byProject: {}
+            };
+
+            projects.forEach(p => {
+                stats.byProject[p.id] = {
+                    name: p.name,
+                    unit: p.unit,
+                    minutes: 0,
+                    count: 0
+                };
+            });
+
+            records.forEach(r => {
+                const project = projects.find(p => p.id === r.projectId);
+                if (project) {
+                    if (project.unit === 'minutes') {
+                        stats.totalMinutes += r.value;
+                        stats.byProject[r.projectId].minutes += r.value;
+                    } else {
+                        stats.totalCount += r.value;
+                        stats.byProject[r.projectId].count += r.value;
+                    }
+                }
+            });
+
+            return stats;
+        }
+
+        function renderTodayRecords() {
+            const container = document.getElementById('todayRecords');
+            const records = getRecordsByDate(getToday());
+
+            if (records.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <i>📝</i>
+                        <p>今日暂无打卡记录</p>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = records.map(r => `
+                <div class="record-item">
+                    <div class="record-info">
+                        <div class="record-project">${r.project.name}</div>
+                        <div class="record-date">今天</div>
+                    </div>
+                    <div class="record-value">${r.value} ${r.project.unit === 'minutes' ? '分钟' : '次'}</div>
+                    <div class="action-btns">
+                        <button class="action-btn edit-btn" onclick="editRecord(${r.id})">编辑</button>
+                        <button class="action-btn delete-btn" onclick="deleteRecord(${r.id})">删除</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function renderProjectsTable() {
+            const tbody = document.getElementById('projectsTable');
+            const projects = getProjects();
+
+            if (projects.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="3" class="empty-state">暂无运动项目</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = projects.map(p => `
+                <tr>
+                    <td>${p.name}</td>
+                    <td>${p.unit === 'minutes' ? '分钟' : '次数'}</td>
+                    <td>
+                        <div class="action-btns">
+                            <button class="action-btn edit-btn" onclick="editProject(${p.id})">编辑</button>
+                            <button class="action-btn delete-btn" onclick="deleteProject(${p.id})">删除</button>
+                        </div>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function renderCheckinProjects() {
+            const select = document.getElementById('checkinProject');
+            const projects = getProjects();
+            
+            select.innerHTML = '<option value="">请选择项目</option>' +
+                projects.map(p => `<option value="${p.id}">${p.name} (${p.unit === 'minutes' ? '分钟' : '次数'})</option>`).join('');
+        }
+
+        function renderCalendar(year, month) {
+            const container = document.getElementById('calendarContainer');
+            const title = document.getElementById('calendarTitle');
+            const days = getMonthDays(year, month);
+            
+            title.textContent = `${year}年${month + 1}月`;
+
+            container.innerHTML = days.map(dateStr => {
+                if (!dateStr) {
+                    return '<div class="calendar-day empty"></div>';
+                }
+                
+                const isToday = dateStr === getToday();
+                const hasRecord = hasRecords(dateStr);
+                let classes = 'calendar-day';
+                
+                if (isToday) classes += ' today';
+                if (hasRecord) classes += ' has-record';
+
+                return `
+                    <div class="${classes}" onclick="selectDate('${dateStr}')">
+                        ${parseDate(dateStr).getDate()}
+                        ${hasRecord ? '<span class="badge"></span>' : ''}
+                    </div>
+                `;
+            }).join('');
+
+            selectDate(getToday());
+        }
+
+        function selectDate(dateStr) {
+            const title = document.getElementById('selectedDateTitle');
+            const container = document.getElementById('selectedDateRecords');
+            const records = getRecordsByDate(dateStr);
+            
+            const date = parseDate(dateStr);
+            const today = new Date();
+            const isTodayDate = dateStr === getToday();
+            
+            let dateText = '';
+            if (isTodayDate) {
+                dateText = '今日记录';
+            } else {
+                const diff = Math.floor((today.getTime() - date.getTime()) / 86400000);
+                if (diff === 1) dateText = '昨日记录';
+                else if (diff === -1) dateText = '明日记录';
+                else dateText = `${date.getFullYear()}年${date.getMonth() + 1}月${date.getDate()}日记录`;
+            }
+            
+            title.textContent = dateText;
+
+            if (records.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <i>📝</i>
+                        <p>该日暂无打卡记录</p>
+                    </div>
+                `;
+                return;
+            }
+
+            container.innerHTML = records.map(r => `
+                <div class="record-item">
+                    <div class="record-info">
+                        <div class="record-project">${r.project.name}</div>
+                        <div class="record-value">${r.value} ${r.project.unit === 'minutes' ? '分钟' : '次'}</div>
+                    </div>
+                    <div class="action-btns">
+                        <button class="action-btn edit-btn" onclick="editRecord(${r.id})">编辑</button>
+                        <button class="action-btn delete-btn" onclick="deleteRecord(${r.id})">删除</button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function prevMonth() {
+            currentCalendarMonth--;
+            if (currentCalendarMonth < 0) {
+                currentCalendarMonth = 11;
+                currentCalendarYear--;
+            }
+            renderCalendar(currentCalendarYear, currentCalendarMonth);
+        }
+
+        function nextMonth() {
+            currentCalendarMonth++;
+            if (currentCalendarMonth > 11) {
+                currentCalendarMonth = 0;
+                currentCalendarYear++;
+            }
+            renderCalendar(currentCalendarYear, currentCalendarMonth);
+        }
+
+        function renderSummary(period) {
+            const records = getRecordsByPeriod(period);
+            const stats = calculateStats(records);
+            const projects = getProjects();
+
+            document.getElementById('totalRecords').textContent = stats.totalRecords;
+            document.getElementById('totalMinutes').textContent = stats.totalMinutes;
+            document.getElementById('totalCount').textContent = stats.totalCount;
+            document.getElementById('activeDays').textContent = stats.activeDays;
+
+            const tbody = document.getElementById('summaryTable');
+            const projectRows = projects
+                .map(p => {
+                    const projectStats = stats.byProject[p.id] || { minutes: 0, count: 0 };
+                    return `
+                        <tr>
+                            <td>${p.name}</td>
+                            <td>${projectStats.minutes}</td>
+                            <td>${projectStats.count}</td>
+                        </tr>
+                    `;
+                })
+                .join('');
+
+            tbody.innerHTML = projectRows || '<tr><td colspan="3" class="empty-state">暂无数据</td></tr>';
+        }
+
+        function openProjectModal(editId = null) {
+            const modal = document.getElementById('projectModal');
+            const form = document.getElementById('projectForm');
+            const title = document.getElementById('projectModalTitle');
+            const idInput = document.getElementById('projectId');
+            const nameInput = document.getElementById('projectName');
+            const unitInput = document.getElementById('projectUnit');
+
+            form.reset();
+
+            if (editId) {
+                const projects = getProjects();
+                const project = projects.find(p => p.id === editId);
+                if (project) {
+                    title.textContent = '编辑运动项目';
+                    idInput.value = project.id;
+                    nameInput.value = project.name;
+                    unitInput.value = project.unit;
+                }
+            } else {
+                title.textContent = '添加运动项目';
+                idInput.value = '';
+            }
+
+            modal.classList.add('active');
+        }
+
+        function closeProjectModal() {
+            document.getElementById('projectModal').classList.remove('active');
+        }
+
+        function openCheckinModal() {
+            const modal = document.getElementById('checkinModal');
+            const form = document.getElementById('checkinForm');
+            const title = document.querySelector('#checkinModal .modal-title');
+            
+            title.textContent = '添加打卡记录';
+            form.reset();
+            document.getElementById('checkinId').value = '';
+            document.getElementById('checkinDate').value = getToday();
+            renderCheckinProjects();
+            
+            modal.classList.add('active');
+        }
+
+        function closeCheckinModal() {
+            document.getElementById('checkinModal').classList.remove('active');
+        }
+
+        document.getElementById('projectForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            
+            const id = document.getElementById('projectId').value;
+            const name = document.getElementById('projectName').value;
+            const unit = document.getElementById('projectUnit').value;
+
+            let projects = getProjects();
+
+            if (id) {
+                const index = projects.findIndex(p => p.id === parseInt(id));
+                if (index !== -1) {
+                    projects[index] = { ...projects[index], name, unit };
+                }
+            } else {
+                const newId = projects.length > 0 ? Math.max(...projects.map(p => p.id)) + 1 : 1;
+                projects.push({ id: newId, name, unit });
+            }
+
+            saveProjects(projects);
+            closeProjectModal();
+            renderProjectsTable();
+            renderCheckinProjects();
+            renderSummary(document.querySelector('.summary-tab.active').dataset.period);
+        });
+
+        document.getElementById('checkinForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            
+            const id = document.getElementById('checkinId').value;
+            const projectId = parseInt(document.getElementById('checkinProject').value);
+            const value = parseInt(document.getElementById('checkinValue').value);
+            const date = document.getElementById('checkinDate').value || getToday();
+
+            let records = getRecords();
+
+            if (id) {
+                const index = records.findIndex(r => r.id === parseInt(id));
+                if (index !== -1) {
+                    records[index] = { ...records[index], projectId, value, date };
+                }
+                showToast('记录已更新！', 'success');
+            } else {
+                const newId = records.length > 0 ? Math.max(...records.map(r => r.id)) + 1 : 1;
+                records.push({ id: newId, projectId, value, date });
+                showToast('打卡成功！', 'success');
+            }
+
+            saveRecords(records);
+            closeCheckinModal();
+            renderTodayRecords();
+            renderCalendar(currentCalendarYear, currentCalendarMonth);
+            renderSummary(document.querySelector('.summary-tab.active').dataset.period);
+            updateSettingsStats();
+        });
+
+        function editProject(id) {
+            openProjectModal(id);
+        }
+
+        function deleteProject(id) {
+            if (!confirm('确定要删除这个运动项目吗？\n\n相关打卡记录也会被删除！')) {
+                return;
+            }
+            
+            const projects = getProjects();
+            const records = getRecords();
+            
+            const newProjects = projects.filter(p => p.id !== id);
+            const newRecords = records.filter(r => r.projectId !== id);
+            
+            saveProjects(newProjects);
+            saveRecords(newRecords);
+            
+            renderProjectsTable();
+            renderTodayRecords();
+            renderCheckinProjects();
+            renderCalendar(currentCalendarYear, currentCalendarMonth);
+            renderSummary(document.querySelector('.summary-tab.active').dataset.period);
+            updateSettingsStats();
+            
+            showToast('项目已删除！', 'success');
+        }
+
+        function editRecord(id) {
+            const records = getRecords();
+            const record = records.find(r => r.id === id);
+            
+            if (!record) return;
+            
+            const modal = document.getElementById('checkinModal');
+            const title = document.querySelector('#checkinModal .modal-title');
+            
+            title.textContent = '编辑打卡记录';
+            document.getElementById('checkinId').value = record.id;
+            renderCheckinProjects();
+            document.getElementById('checkinProject').value = record.projectId;
+            document.getElementById('checkinValue').value = record.value;
+            document.getElementById('checkinDate').value = record.date;
+            
+            modal.classList.add('active');
+        }
+
+        function deleteRecord(id) {
+            if (!confirm('确定要删除这条打卡记录吗？')) {
+                return;
+            }
+            
+            const records = getRecords();
+            const newRecords = records.filter(r => r.id !== id);
+            
+            saveRecords(newRecords);
+            renderTodayRecords();
+            renderCalendar(currentCalendarYear, currentCalendarMonth);
+            renderSummary(document.querySelector('.summary-tab.active').dataset.period);
+            updateSettingsStats();
+            
+            showToast('记录已删除！', 'success');
+        }
+
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+            btn.addEventListener('click', function() {
+                const tabId = this.dataset.tab;
+                
+                document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+                this.classList.add('active');
+                
+                document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+                document.getElementById(tabId).classList.add('active');
+
+                if (tabId === 'calendar') {
+                    renderCalendar(currentCalendarYear, currentCalendarMonth);
+                }
+                
+                if (tabId === 'settings') {
+                    updateSettingsStats();
+                }
+            });
+        });
+
+        document.querySelectorAll('.summary-tab').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.summary-tab').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                renderSummary(btn.dataset.period);
+            });
+        });
+
+        document.addEventListener('DOMContentLoaded', () => {
+            saveProjects(getProjects());
+            saveRecords(getRecords());
+            
+            renderTodayRecords();
+            renderProjectsTable();
+            renderCheckinProjects();
+            renderCalendar(currentCalendarYear, currentCalendarMonth);
+            renderSummary('day');
+            updateSettingsStats();
+            
+            // 初始化倒计时显示
+            const hours = parseInt(document.getElementById('countdownHours').value) || 0;
+            const minutes = parseInt(document.getElementById('countdownMinutes').value) || 5;
+            const seconds = parseInt(document.getElementById('countdownSeconds').value) || 0;
+            countdownTime = hours * 3600 + minutes * 60 + seconds;
+            updateCountdownDisplay();
+        });
+    </script>
+</body>
+</html>
