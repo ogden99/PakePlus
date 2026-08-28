@@ -1,0 +1,1152 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="format-detection" content="telephone=no">
+<title>门诊化疗日期管理</title>
+<style>
+* { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+
+:root {
+  --primary:#5a67d8; --secondary:#764ba2;
+  --success:#48bb78; --warning:#ed8936; --danger:#e53e3e;
+  --bg:#f0f2f5; --card:#fff; --text:#2d3748; --text2:#718096; --text3:#a0aec0;
+  --border:#e2e8f0; --border2:#edf2f7;
+  --r:14px; --r2:10px;
+  --hdr:48px; --tabh:58px; --dots:28px;
+}
+
+html { height:100%; }
+body {
+  height:100%;
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;
+  background:var(--bg); color:var(--text); font-size:15px; line-height:1.5;
+  overflow:hidden;
+  position:fixed; top:0; left:0; right:0; bottom:0;
+}
+
+/* ===== 头部 ===== */
+.header {
+  position:absolute; top:0; left:0; right:0;
+  height:var(--hdr);
+  background:linear-gradient(135deg,var(--primary),var(--secondary));
+  color:#fff; display:flex; flex-direction:column; align-items:center; justify-content:center;
+  padding-top:env(safe-area-inset-top);
+  box-shadow:0 2px 8px rgba(90,103,216,.25);
+  z-index:10;
+}
+.header h1 { font-size:1.05rem; letter-spacing:1px; font-weight:700; }
+.header .sub { font-size:.62rem; opacity:.8; margin-top:1px; }
+
+/* ===== 指示点 ===== */
+.dots-bar {
+  position:absolute; top:var(--hdr); left:0; right:0;
+  height:var(--dots);
+  display:flex; justify-content:center; align-items:center; gap:5px;
+  background:var(--card); border-bottom:1px solid var(--border2);
+  z-index:10;
+}
+.dots-bar .d { width:5px; height:5px; border-radius:50%; background:var(--border); transition:.3s; }
+.dots-bar .d.on { width:16px; border-radius:3px; background:var(--primary); }
+
+/* ===== 内容区 ===== */
+.main {
+  position:absolute;
+  top:calc(var(--hdr) + var(--dots));
+  left:0; right:0;
+  bottom:var(--tabh);
+  bottom:calc(var(--tabh) + env(safe-area-inset-bottom));
+  overflow:hidden;
+}
+
+/* 每屏独立，默认隐藏，激活显示 */
+.page {
+  display:none;
+  width:100%; height:100%;
+  overflow-y:auto; overflow-x:hidden;
+  -webkit-overflow-scrolling:touch;
+  padding:12px;
+  padding-bottom:16px;
+}
+.page.on { display:block; }
+
+/* ===== 底部Tab ===== */
+.tabs {
+  position:fixed; bottom:0; left:0; right:0;
+  height:calc(var(--tabh) + env(safe-area-inset-bottom));
+  padding-bottom:env(safe-area-inset-bottom);
+  background:#fff; display:flex;
+  box-shadow:0 -2px 12px rgba(0,0,0,.08);
+  z-index:99;
+}
+.tab {
+  flex:1; display:flex; flex-direction:column;
+  align-items:center; justify-content:center; gap:2px;
+  border:none; background:none; cursor:pointer;
+  color:var(--text3); font-size:.68rem; font-weight:500;
+  padding:5px 2px;
+  -webkit-appearance:none; appearance:none;
+}
+.tab .ic { font-size:1.35rem; line-height:1.2; margin-bottom:1px; }
+.tab.on { color:var(--primary); }
+.tab.on .ic { transform:scale(1.1); }
+
+/* ===== 卡片 ===== */
+.card {
+  background:var(--card); border-radius:var(--r);
+  padding:14px; margin-bottom:10px;
+  box-shadow:0 2px 10px rgba(0,0,0,.05);
+  border:1px solid var(--border2);
+}
+.card h2 { font-size:.95rem; color:var(--primary); margin-bottom:10px; display:flex; align-items:center; gap:5px; }
+.card h2 .em { font-size:1.1rem; }
+
+/* ===== 统计 ===== */
+.stats { display:grid; grid-template-columns:repeat(3,1fr); gap:6px; }
+.stat {
+  background:linear-gradient(135deg,var(--primary),var(--secondary));
+  color:#fff; border-radius:var(--r2); padding:10px 6px; text-align:center;
+}
+.stat .n { font-size:1.35rem; font-weight:800; line-height:1.1; }
+.stat .l { font-size:.63rem; opacity:.9; margin-top:1px; }
+.stat.g { background:linear-gradient(135deg,#48bb78,#38a169); }
+.stat.o { background:linear-gradient(135deg,#ed8936,#dd6b20); }
+.stat.r { background:linear-gradient(135deg,#e53e3e,#c53030); }
+.stat.t { background:linear-gradient(135deg,#319795,#2c7a7b); }
+.stat.p { background:linear-gradient(135deg,#d53f8c,#b83280); }
+
+/* ===== 表单 ===== */
+.fg { margin-bottom:10px; }
+.fg label { display:block; font-size:.78rem; font-weight:600; margin-bottom:4px; }
+.fg input, .fg select {
+  width:100%; padding:10px 11px;
+  border:1.5px solid var(--border); border-radius:var(--r2);
+  font-size:.9rem; background:#fafbfc; color:var(--text);
+  -webkit-appearance:none; appearance:none;
+}
+.fg input:focus, .fg select:focus {
+  outline:none; border-color:var(--primary);
+  box-shadow:0 0 0 3px rgba(90,103,216,.1); background:#fff;
+}
+.row { display:flex; gap:8px; }
+.row .fg { flex:1; }
+
+.chips { display:flex; gap:5px; flex-wrap:wrap; margin-top:4px; }
+.chip {
+  padding:4px 10px; background:#edf2f7; border-radius:14px;
+  font-size:.74rem; color:var(--text2); border:1px solid var(--border);
+  cursor:pointer; user-select:none;
+}
+.chip:active { background:var(--primary); color:#fff; }
+
+/* ===== 按钮 ===== */
+.btn {
+  display:inline-flex; align-items:center; justify-content:center; gap:4px;
+  padding:11px 16px; border:none; border-radius:var(--r2);
+  font-size:.88rem; font-weight:600; cursor:pointer;
+  -webkit-appearance:none; appearance:none;
+}
+.btn:active { opacity:.85; }
+.btn.primary { background:linear-gradient(135deg,var(--primary),var(--secondary)); color:#fff; box-shadow:0 3px 10px rgba(90,103,216,.25); }
+.btn.success { background:var(--success); color:#fff; }
+.btn.warn { background:var(--warning); color:#fff; }
+.btn.danger { background:var(--danger); color:#fff; }
+.btn.block { width:100%; }
+.btn.sm { padding:6px 10px; font-size:.76rem; border-radius:7px; }
+
+/* ===== 日历 ===== */
+.cal-nav { display:flex; align-items:center; justify-content:space-between; margin-bottom:10px; gap:5px; }
+.cal-nav .nb { width:32px; height:32px; border:none; border-radius:50%; background:var(--primary); color:#fff; font-size:.95rem; cursor:pointer; flex-shrink:0; }
+.cal-nav .ml { font-size:.92rem; font-weight:700; flex:1; text-align:center; }
+.cal-nav select { padding:5px 8px; border:1.5px solid var(--border); border-radius:7px; font-size:.8rem; background:#fff; -webkit-appearance:none; }
+
+.cal-grid { display:grid; grid-template-columns:repeat(7,1fr); gap:2px; }
+.cal-h { background:var(--primary); color:#fff; padding:4px 2px; text-align:center; font-size:.68rem; font-weight:700; border-radius:4px; }
+.cal-c {
+  background:#fafbfc; border:1px solid var(--border2); border-radius:4px;
+  padding:2px 3px; min-height:46px; display:flex; flex-direction:column;
+}
+.cal-c .cd { font-size:.73rem; font-weight:600; }
+.cal-c.today { background:#fefcbf; border-color:#ecc94b; }
+.cal-c.today .cd { color:#b7791f; }
+.cal-c.om { opacity:.3; }
+.cal-p {
+  font-size:.54rem; background:#c6f6d5; color:#276749;
+  padding:1px 2px; border-radius:2px; margin-top:1px;
+  white-space:nowrap; overflow:hidden; text-overflow:ellipsis;
+}
+.cal-p.adj { background:#fefcbf; color:#b7791f; }
+
+/* 视图切换 */
+.vt { display:flex; background:var(--border2); border-radius:var(--r2); padding:2px; margin-bottom:10px; }
+.vt button { flex:1; padding:7px; border:none; border-radius:8px; background:transparent; color:var(--text3); font-size:.8rem; font-weight:600; cursor:pointer; }
+.vt button.on { background:#fff; color:var(--primary); box-shadow:0 1px 3px rgba(0,0,0,.06); }
+
+/* ===== 周视图 ===== */
+.wk-grid { display:grid; grid-template-columns:repeat(7,1fr); gap:3px; }
+.wk-card { background:#fafbfc; border:1px solid var(--border2); border-radius:7px; padding:5px 2px; min-height:75px; display:flex; flex-direction:column; }
+.wk-card.today { background:#fefcbf; border-color:#ecc94b; }
+.wk-card .wd { font-size:.6rem; font-weight:700; color:var(--primary); text-align:center; }
+.wk-card .wdt { font-size:.72rem; font-weight:700; text-align:center; margin-bottom:2px; }
+.wk-card .wp { font-size:.5rem; background:#c6f6d5; color:#276749; padding:1px 2px; border-radius:2px; text-align:center; margin-top:1px; }
+.wk-card .wp.adj { background:#fefcbf; color:#b7791f; }
+
+/* ===== 列表 ===== */
+.li-item { background:#fff; border:1px solid var(--border2); border-radius:var(--r2); padding:10px; margin-bottom:7px; display:flex; align-items:center; gap:8px; }
+.li-badge { background:var(--primary); color:#fff; border-radius:7px; padding:5px 8px; text-align:center; min-width:46px; flex-shrink:0; }
+.li-badge .bm { font-size:.58rem; opacity:.9; line-height:1; }
+.li-badge .bd { font-size:1.1rem; font-weight:800; line-height:1.2; }
+.li-badge.today { background:var(--warning); }
+.li-badge.past { background:var(--text3); }
+.li-info { flex:1; min-width:0; }
+.li-info .ln { font-weight:700; font-size:.88rem; }
+.li-info .ld { font-size:.72rem; color:var(--text2); margin-top:2px; }
+.li-st { font-size:.66rem; padding:3px 7px; border-radius:10px; font-weight:600; flex-shrink:0; }
+.li-st.done { background:#e6fffa; color:#2c7a7b; }
+.li-st.today-st { background:#fefcbf; color:#b7791f; }
+.li-st.up { background:#ebf8ff; color:#2b6cb0; }
+
+/* ===== 搜索框 ===== */
+.srch-box {
+  display:flex; align-items:center; gap:6px;
+  background:#f7fafc; border:1.5px solid var(--border); border-radius:var(--r2);
+  padding:4px 8px; margin-bottom:10px;
+}
+.srch-box .si { font-size:1rem; flex-shrink:0; opacity:.5; }
+.srch-box input {
+  flex:1; border:none; background:transparent; outline:none;
+  font-size:.88rem; padding:7px 4px; color:var(--text); min-width:0;
+}
+.srch-box input::placeholder { color:var(--text3); }
+.srch-box .sc-btn {
+  flex-shrink:0; border:none; background:var(--primary); color:#fff;
+  padding:5px 12px; border-radius:7px; font-size:.76rem; font-weight:600;
+  cursor:pointer; -webkit-appearance:none;
+}
+.srch-box .sc-btn:active { opacity:.85; }
+.srch-box .sc-clear {
+  flex-shrink:0; border:none; background:none; color:var(--text3);
+  font-size:1.1rem; padding:2px 5px; cursor:pointer; display:none;
+}
+.srch-box .sc-clear.on { display:block; }
+
+/* 搜索结果高亮 */
+mark.hl { background:#fefcbf; color:#b7791f; padding:0 2px; border-radius:2px; font-weight:700; }
+.srch-meta { font-size:.72rem; color:var(--primary); margin-bottom:6px; padding:0 2px; }
+.srch-empty { text-align:center; padding:20px 14px; color:var(--text3); font-size:.82rem; }
+.cal-c[style*="outline"], .wk-card[style*="outline"] { background:#ebf4ff !important; }
+
+/* ===== 患者卡 ===== */
+.pc { background:#fff; border:1px solid var(--border2); border-radius:var(--r); padding:12px; margin-bottom:10px; }
+.pc-head { display:flex; justify-content:space-between; align-items:flex-start; gap:8px; margin-bottom:6px; }
+.pc-name { font-size:.92rem; font-weight:700; }
+.pc-meta { font-size:.72rem; color:var(--text2); margin-top:2px; line-height:1.5; }
+.pc-acts { display:flex; gap:5px; flex-shrink:0; }
+.pc-prog { height:4px; background:var(--border2); border-radius:3px; margin:6px 0; overflow:hidden; }
+.pc-prog > div { height:100%; background:linear-gradient(90deg,var(--primary),var(--secondary)); border-radius:3px; }
+.pc-tags { display:flex; flex-wrap:wrap; gap:4px; }
+.pc-tag { font-size:.66rem; padding:2px 7px; border-radius:10px; background:#ebf4ff; color:#4c51bf; border:1px solid #c3dafe; }
+.pc-tag.adj { background:#fefcbf; color:#b7791f; border-color:#f6e05e; }
+
+/* ===== 空状态 ===== */
+.empty { text-align:center; padding:35px 14px; color:var(--text3); }
+.empty .ei { font-size:2.8rem; margin-bottom:8px; opacity:.5; }
+.empty .et { font-size:.82rem; line-height:1.6; }
+
+/* 分隔线 */
+.divider { display:flex; align-items:center; gap:8px; margin:10px 0 8px; }
+.divider::before, .divider::after { content:''; flex:1; height:1px; background:var(--border); }
+.divider span { font-size:.7rem; color:var(--text3); }
+
+/* ===== 弹窗 ===== */
+.mask {
+  display:none; position:fixed; top:0; left:0; right:0; bottom:0;
+  background:rgba(0,0,0,.5); z-index:999;
+  align-items:flex-end; justify-content:center;
+}
+.mask.on { display:flex; }
+.sheet {
+  background:#fff; border-radius:14px 14px 0 0;
+  padding:18px 14px; padding-bottom:calc(18px + env(safe-area-inset-bottom));
+  width:100%; max-height:70vh; overflow-y:auto;
+  transform:translateY(100%); transition:transform .3s ease;
+}
+.mask.on .sheet { transform:translateY(0); }
+.sheet h3 { font-size:1rem; color:var(--primary); text-align:center; margin-bottom:4px; }
+.sheet .sub { text-align:center; color:var(--text2); font-size:.76rem; margin-bottom:12px; }
+.ar { display:flex; align-items:center; justify-content:space-between; gap:6px; padding:8px; background:#f8fafc; border-radius:8px; margin-bottom:5px; }
+.ar-s { font-weight:700; font-size:.82rem; }
+.ar-o { font-size:.66rem; color:var(--text2); margin-top:1px; }
+.ar input[type=date] { padding:6px 8px; border:1.5px solid var(--border); border-radius:7px; font-size:.78rem; min-width:112px; -webkit-appearance:none; }
+.ar-reset { background:none; border:none; color:var(--primary); font-size:.74rem; font-weight:600; padding:3px 5px; cursor:pointer; }
+.ar-reset:disabled { color:var(--text3); }
+.modal-acts { display:flex; gap:8px; margin-top:14px; }
+.modal-acts .btn { flex:1; }
+
+/* ===== Toast ===== */
+.toasts { position:fixed; top:calc(14px + env(safe-area-inset-top)); left:50%; transform:translateX(-50%); z-index:2000; display:flex; flex-direction:column; gap:5px; pointer-events:none; }
+.toast { background:#333; color:#fff; padding:9px 16px; border-radius:8px; font-size:.8rem; font-weight:500; box-shadow:0 3px 10px rgba(0,0,0,.2); animation:tin .25s ease, tout .25s ease 2.5s forwards; white-space:nowrap; }
+.toast.s { background:var(--success); }
+.toast.e { background:var(--danger); }
+@keyframes tin { from{opacity:0;transform:translateY(-12px);} to{opacity:1;transform:translateY(0);} }
+@keyframes tout { from{opacity:1;} to{opacity:0;transform:translateY(-12px);} }
+
+/* 导入 */
+.imp-wrap { position:relative; }
+.imp-wrap input[type=file] { position:absolute; inset:0; opacity:0; cursor:pointer; }
+
+.today-card { display:none; }
+
+/* ===== 小屏适配 ===== */
+@media (max-width:420px) {
+  body { font-size:14px; }
+  .header h1 { font-size:.98rem; }
+  .card { padding:12px; margin-bottom:9px; border-radius:12px; }
+  .stat .n { font-size:1.2rem; }
+  .stat .l { font-size:.58rem; }
+  .cal-c { min-height:42px; }
+  .cal-c .cd { font-size:.7rem; }
+  .cal-p { font-size:.5rem; }
+  .wk-card { min-height:68px; padding:4px 2px; }
+  .wk-card .wdt { font-size:.68rem; }
+  .wk-card .wp { font-size:.48rem; }
+  .btn { padding:10px 14px; font-size:.84rem; }
+  .tab .ic { font-size:1.2rem; }
+  .tab { font-size:.62rem; }
+  .pc-name { font-size:.88rem; }
+  .li-item { padding:9px; }
+  .li-badge { min-width:42px; padding:4px 6px; }
+  .li-badge .bd { font-size:.95rem; }
+  .fg input, .fg select { padding:9px 10px; font-size:.86rem; }
+}
+
+@media (max-width:360px) {
+  .stats { gap:4px; }
+  .stat { padding:7px 3px; }
+  .stat .n { font-size:1.05rem; }
+  .cal-c { min-height:38px; }
+}
+
+@media (max-height:480px) and (orientation:landscape) {
+  .header { height:38px; }
+  .header h1 { font-size:.85rem; }
+  :root { --hdr:38px; --tabh:42px; --dots:22px; }
+  .tab .ic { font-size:1rem; }
+}
+
+@media (min-width:768px) {
+  .page { max-width:620px; margin:0 auto; }
+  .stats { grid-template-columns:repeat(6,1fr); }
+}
+</style>
+</head>
+<body>
+
+<!-- 头部 -->
+<div class="header">
+  <h1>💊 门诊化疗日期管理</h1>
+  <div class="sub">Chemotherapy Schedule Manager</div>
+</div>
+
+<!-- 指示点 -->
+<div class="dots-bar" id="dotsBar">
+  <div class="d on" data-i="0"></div>
+  <div class="d" data-i="1"></div>
+  <div class="d" data-i="2"></div>
+</div>
+
+<!-- 主内容区 -->
+<div class="main" id="main">
+
+  <!-- ====== 第1页：日程展示 ====== -->
+  <div class="page on" id="page0">
+    <div class="stats" id="stats"></div>
+
+    <!-- 搜索框 -->
+    <div class="card" style="padding:10px 12px;">
+      <div class="srch-box">
+        <span class="si">🔍</span>
+        <input id="srchInput" type="text" placeholder="输入姓名任意字搜索患者..." oninput="doSearch()" onkeydown="if(event.key==='Enter')doSearch()">
+        <button class="sc-btn" onclick="doSearch()">搜索</button>
+        <button class="sc-clear" id="srchClear" onclick="clearSearch()">✕</button>
+      </div>
+      <div id="srchMeta" class="srch-meta" style="display:none;"></div>
+    </div>
+
+    <div class="card">
+      <h2><span class="em">📅</span> 化疗日程</h2>
+
+      <div class="vt" id="vt">
+        <button class="on" data-v="month" onclick="chView('month',this)">月视图</button>
+        <button data-v="week" onclick="chView('week',this)">周视图</button>
+        <button data-v="list" onclick="chView('list',this)">列表</button>
+      </div>
+
+      <div id="mNav" class="cal-nav">
+        <button class="nb" onclick="navM(-1)">◀</button>
+        <div class="ml" id="mLbl"></div>
+        <select id="ySel" onchange="onYChg()"></select>
+        <button class="nb" onclick="navM(1)">▶</button>
+      </div>
+
+      <div id="wNav" class="cal-nav" style="display:none;">
+        <button class="nb" onclick="navW(-1)">◀</button>
+        <div class="ml" id="wLbl"></div>
+        <button class="btn warn sm" onclick="goToday()">今天</button>
+        <button class="nb" onclick="navW(1)">▶</button>
+      </div>
+
+      <div class="cal-grid" id="calGrid"></div>
+      <div class="wk-grid" id="wkGrid" style="display:none;"></div>
+      <div id="listBox" style="display:none;"></div>
+    </div>
+
+    <div class="card today-card" id="todayCard">
+      <h2><span class="em">🔔</span> 今日化疗提醒</h2>
+      <div id="todayBox"></div>
+    </div>
+  </div>
+
+  <!-- ====== 第2页：输入管理 ====== -->
+  <div class="page" id="page1">
+    <div class="card">
+      <h2><span class="em">📝</span> 添加化疗患者</h2>
+
+      <div class="fg">
+        <label>患者姓名 *</label>
+        <input id="pName" type="text" placeholder="请输入患者姓名">
+      </div>
+
+      <div class="fg">
+        <label>首次化疗日期 *</label>
+        <input id="pDate" type="date">
+      </div>
+
+      <div class="row">
+        <div class="fg">
+          <label>间隔天数 *</label>
+          <input id="pInt" type="number" min="1" value="7">
+          <div class="chips">
+            <span class="chip" onclick="setVal('pInt',7)">7天</span>
+            <span class="chip" onclick="setVal('pInt',14)">14天</span>
+            <span class="chip" onclick="setVal('pInt',21)">21天</span>
+            <span class="chip" onclick="setVal('pInt',28)">28天</span>
+          </div>
+        </div>
+        <div class="fg">
+          <label>总次数 *</label>
+          <input id="pTot" type="number" min="1" value="6">
+          <div class="chips">
+            <span class="chip" onclick="setVal('pTot',4)">4次</span>
+            <span class="chip" onclick="setVal('pTot',6)">6次</span>
+            <span class="chip" onclick="setVal('pTot',8)">8次</span>
+            <span class="chip" onclick="setVal('pTot',12)">12次</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="fg">
+        <label>备注（可选）</label>
+        <input id="pNote" type="text" placeholder="如：AC-T方案">
+      </div>
+
+      <button class="btn primary block" onclick="addP()">➕ 添加患者</button>
+    </div>
+
+    <div class="divider"><span>患者列表</span></div>
+    <!-- 患者搜索 -->
+    <div class="srch-box" style="margin-bottom:10px;">
+      <span class="si">🔍</span>
+      <input id="pcSrchInput" type="text" placeholder="输入姓名任意字搜索..." oninput="doPcSearch()">
+      <button class="sc-btn" onclick="doPcSearch()">搜索</button>
+      <button class="sc-clear" id="pcSrchClear" onclick="clearPcSearch()">✕</button>
+    </div>
+    <div id="pcSrchMeta" class="srch-meta" style="display:none;"></div>
+    <div id="pcList"></div>
+  </div>
+
+  <!-- ====== 第3页：导入导出 ====== -->
+  <div class="page" id="page2">
+    <div class="card">
+      <h2><span class="em">💾</span> 数据管理</h2>
+
+      <div style="display:flex;flex-direction:column;gap:8px;">
+        <button class="btn success block" onclick="expCSV()">📥 导出CSV（Excel兼容）</button>
+        <div style="font-size:.72rem;color:var(--text2);padding:0 3px;">用Excel/WPS直接打开，方便打印分享</div>
+
+        <div class="divider"><span>备份与恢复</span></div>
+
+        <button class="btn primary block" onclick="expJSON()">💾 导出完整备份(JSON)</button>
+        <div style="font-size:.72rem;color:var(--text2);padding:0 3px;">包含所有患者和调整记录</div>
+
+        <div class="imp-wrap">
+          <button class="btn warn block">📤 导入备份(JSON)</button>
+          <input type="file" id="impFile" accept=".json" onchange="impJSON(event)">
+        </div>
+        <div style="font-size:.72rem;color:var(--text2);padding:0 3px;">选择之前导出的备份文件恢复</div>
+
+        <div class="divider"><span>危险操作</span></div>
+
+        <button class="btn danger block" onclick="clearAll()">🗑️ 清空所有数据</button>
+        <div style="font-size:.72rem;color:var(--danger);padding:0 3px;">删除全部记录，不可恢复！</div>
+      </div>
+    </div>
+
+    <div class="card" id="prevCard" style="display:none;">
+      <h2><span class="em">📊</span> 数据预览</h2>
+      <div id="prevBox" style="font-size:.74rem;color:var(--text2);line-height:2;"></div>
+    </div>
+
+    <div class="card">
+      <h2><span class="em">ℹ️</span> 存储信息</h2>
+      <div style="font-size:.76rem;color:var(--text2);line-height:2;">
+        <div>📦 方式：浏览器本地存储</div>
+        <div>💡 数据保存在本设备，清缓存会丢失</div>
+        <div>🔄 建议定期导出备份</div>
+        <div id="stoInfo"></div>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- 底部Tab -->
+<div class="tabs">
+  <button class="tab on" id="tab0" onclick="switchTab(0)"><span class="ic">📅</span>日程</button>
+  <button class="tab" id="tab1" onclick="switchTab(1)"><span class="ic">📝</span>输入</button>
+  <button class="tab" id="tab2" onclick="switchTab(2)"><span class="ic">💾</span>数据</button>
+</div>
+
+<!-- 调整弹窗 -->
+<div class="mask" id="mask" onclick="if(event.target===this)closeM()">
+  <div class="sheet">
+    <h3>🔄 调整化疗日期</h3>
+    <div class="sub" id="adjSub"></div>
+    <div id="adjBox"></div>
+    <div class="modal-acts">
+      <button class="btn primary" onclick="saveAdj()">💾 保存</button>
+      <button class="btn danger" onclick="closeM()">取消</button>
+    </div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="toasts" id="toasts"></div>
+
+<script>
+// ============ 数据 ============
+var patients = [];
+function loadP(){ try{ var d=localStorage.getItem('chemoP'); if(d) patients=JSON.parse(d); }catch(e){patients=[];} }
+loadP();
+var curPage=0, view='month', vy=0, vm=0, adjId=null;
+var TODAY=new Date(); TODAY.setHours(0,0,0,0);
+
+// ============ 初始化 ============
+function init(){
+  // 日期默认（不设min限制，允许选择任何日期）
+  var dIn=document.getElementById('pDate');
+  if(dIn){ dIn.value=fDate(TODAY); dIn.removeAttribute('min'); }
+
+  // 年选择
+  var ySel=document.getElementById('ySel'), yNow=TODAY.getFullYear();
+  for(var y=yNow-2;y<=yNow+3;y++){var o=document.createElement('option');o.value=y;o.textContent=y+'年';ySel.appendChild(o);}
+  vy=yNow; vm=TODAY.getMonth();
+  if(ySel) ySel.value=yNow;
+
+  // 渲染
+  renderAll();
+  updSto();
+
+  // 兜底高度
+  fixH();
+}
+
+if(document.readyState==='loading'){
+  document.addEventListener('DOMContentLoaded',init);
+}else{
+  init();
+}
+
+// 双保险
+setTimeout(function(){
+  if(!document.getElementById('stats').children.length){ init(); }
+},150);
+
+// 兜底：确保内容区有高度
+function fixH(){
+  var main=document.getElementById('main');
+  if(!main)return;
+  if(main.offsetHeight<100){
+    var total=window.innerHeight||document.documentElement.clientHeight||852;
+    var hdr=document.querySelector('.header'); var h=(hdr&&hdr.offsetHeight)||48;
+    var dt=document.querySelector('.dots-bar'); var d=(dt&&dt.offsetHeight)||28;
+    var tb=document.querySelector('.tabs'); var t=(tb&&tb.offsetHeight)||58;
+    var nh=total-h-d-t-4;
+    if(nh>100){
+      main.style.height=nh+'px';
+      main.style.bottom='auto';
+    }
+  }
+}
+window.addEventListener('resize',fixH);
+window.addEventListener('orientationchange',function(){setTimeout(fixH,300);});
+
+// ============ 工具 ============
+function fDate(d){var dt=(d instanceof Date)?d:new Date(d+'T00:00:00');return dt.getFullYear()+'-'+pad(dt.getMonth()+1)+'-'+pad(dt.getDate());}
+function pad(n){return n<10?'0'+n:''+n;}
+function pDate(s){return new Date(s+'T00:00:00');}
+function fCN(s){var d=pDate(s);return(d.getMonth()+1)+'月'+d.getDate()+'日';}
+function save(){try{localStorage.setItem('chemoP',JSON.stringify(patients));}catch(e){}updSto();}
+
+function toast(msg,t){
+  var c=document.getElementById('toasts'),el=document.createElement('div');
+  el.className='toast'+(t?' '+t:'');el.textContent=msg;c.appendChild(el);
+  setTimeout(function(){el.remove();},3000);
+}
+
+// ============ 切换选项卡（纯点击） ============
+function switchTab(i){
+  curPage=i;
+
+  // 页面显示/隐藏
+  for(var p=0;p<3;p++){
+    var pg=document.getElementById('page'+p);
+    if(p===i)pg.classList.add('on'); else pg.classList.remove('on');
+  }
+
+  // Tab高亮
+  for(var t=0;t<3;t++){
+    var tb=document.getElementById('tab'+t);
+    if(t===i)tb.classList.add('on'); else tb.classList.remove('on');
+  }
+
+  // 指示点
+  var dots=document.querySelectorAll('.dots-bar .d');
+  for(var d=0;d<dots.length;d++){
+    if(d===i)dots[d].classList.add('on'); else dots[d].classList.remove('on');
+  }
+
+  // 切换后渲染对应内容
+  if(i===0){renderCal();renderWk();renderList();updStats();}
+  else if(i===1)renderPc();
+  else if(i===2)renderPrev();
+}
+
+// ============ 统计 ============
+function updStats(){
+  var tp=patients.length,ts=0,dn=0,up=0,ad=0,tw=0;
+  var ws=new Date(TODAY);ws.setDate(TODAY.getDate()-TODAY.getDay());
+  var we=new Date(ws);we.setDate(ws.getDate()+6);
+
+  for(var i=0;i<patients.length;i++){
+    var p=patients[i];
+    for(var j=0;j<p.dates.length;j++){
+      ts++;var sd=pDate(p.dates[j].date);
+      if(sd<TODAY)dn++;else up++;
+      if(p.dates[j].adjusted)ad++;
+      if(sd>=ws&&sd<=we)tw++;
+    }
+  }
+
+  var s=document.getElementById('stats');
+  if(s)s.innerHTML=
+    '<div class="stat"><div class="n">'+tp+'</div><div class="l">患者</div></div>'+
+    '<div class="stat g"><div class="n">'+ts+'</div><div class="l">总次数</div></div>'+
+    '<div class="stat t"><div class="n">'+dn+'</div><div class="l">已完成</div></div>'+
+    '<div class="stat o"><div class="n">'+up+'</div><div class="l">待进行</div></div>'+
+    '<div class="stat p"><div class="n">'+tw+'</div><div class="l">本周</div></div>'+
+    '<div class="stat r"><div class="n">'+ad+'</div><div class="l">已调整</div></div>';
+
+  // 今日提醒
+  var tArr=[];
+  for(var a=0;a<patients.length;a++){
+    for(var b=0;b<patients[a].dates.length;b++){
+      if(patients[a].dates[b].date===fDate(TODAY))
+        tArr.push({n:patients[a].name,s:patients[a].dates[b].session,t:patients[a].totalSessions,a:patients[a].dates[b].adjusted});
+    }
+  }
+  var tc=document.getElementById('todayCard');
+  if(tArr.length&&tc){
+    tc.style.display='';
+    var html='';
+    for(var k=0;k<tArr.length;k++){var x=tArr[k];
+      html+='<div style="display:flex;align-items:center;gap:8px;padding:8px;background:#fefcbf;border-radius:8px;margin-bottom:4px;"><span style="font-size:1.2rem;">'+(x.a?'⚠️':'💊')+'</span><div><b>'+x.n+'</b> 第'+x.s+'/'+x.t+'次'+(x.a?' (已调)':'')+'</div></div>';
+    }
+    document.getElementById('todayBox').innerHTML=html;
+  }else if(tc)tc.style.display='none';
+}
+
+// ============ 月历 ============
+function renderCal(){
+  if(view!=='month')return;
+  var ySel=document.getElementById('ySel');if(ySel)ySel.value=vy;
+  var mLbl=document.getElementById('mLbl');if(mLbl)mLbl.textContent=vy+'年'+(vm+1)+'月';
+
+  var g=document.getElementById('calGrid');if(!g)return;g.innerHTML='';
+  var wd=['日','一','二','三','四','五','六'];
+  for(var i=0;i<7;i++){var h=document.createElement('div');h.className='cal-h';h.textContent='周'+wd[i];g.appendChild(h);}
+
+  var fd=new Date(vy,vm,1).getDay();
+  var dim=new Date(vy,vm+1,0).getDate();
+  var pd=new Date(vy,vm,0).getDate();
+
+  for(var a=fd-1;a>=0;a--){var c=document.createElement('div');c.className='cal-c om';c.innerHTML='<div class="cd">'+(pd-a)+'</div>';g.appendChild(c);}
+
+  for(var d=1;d<=dim;d++){
+    var ds=vy+'-'+pad(vm+1)+'-'+pad(d);
+    var it=(ds===fDate(TODAY));
+    var c=document.createElement('div');c.className='cal-c'+(it?' today':'');
+
+    var ps=[];
+    for(var pi=0;pi<patients.length;pi++){
+      for(var di=0;di<patients[pi].dates.length;di++){
+        if(patients[pi].dates[di].date===ds)ps.push({n:patients[pi].name,s:patients[pi].dates[di].session,a:patients[pi].dates[di].adjusted});
+      }
+    }
+
+    var html='<div class="cd">'+d+(it?'(今)':'')+'</div>';
+    for(var k=0;k<Math.min(2,ps.length);k++)html+='<div class="cal-p'+(ps[k].a?' adj':'')+'">'+(ps[k].a?'⚠':'')+ps[k].n+'·第'+ps[k].s+'次</div>';
+    if(ps.length>2)html+='<div class="cal-p">+'+(ps.length-2)+'更多</div>';
+    c.innerHTML=html;
+
+    if(ps.length){
+      (function(names,dt){c.onclick=function(){toast(dt+': '+names);};})(ps.map(function(x){return x.n;}).join('、'),ds);
+    }
+    g.appendChild(c);
+  }
+
+  var total=fd+dim,rem=(7-total%7)%7;
+  for(var r=1;r<=rem;r++){var c=document.createElement('div');c.className='cal-c om';c.innerHTML='<div class="cd">'+r+'</div>';g.appendChild(c);}
+}
+
+function onYChg(){var sel=document.getElementById('ySel');if(sel)vy=parseInt(sel.value);renderCal();}
+
+function navM(dir){
+  vm+=dir;
+  if(vm>11){vm=0;vy++;}
+  if(vm<0){vm=11;vy--;}
+  var sel=document.getElementById('ySel');if(sel)sel.value=vy;
+  renderCal();
+}
+
+// ============ 周视图 ============
+function renderWk(){
+  var g=document.getElementById('wkGrid');if(!g)return;g.innerHTML='';
+  var wd=['周日','周一','周二','周三','周四','周五','周六'];
+  var ws=new Date(TODAY);ws.setDate(TODAY.getDate()-TODAY.getDay());ws.setHours(0,0,0,0);
+
+  var wLbl=document.getElementById('wLbl');
+  if(wLbl)wLbl.textContent=fCN(fDate(ws))+'~'+fCN(fDate(new Date(ws.getTime()+6*86400000)));
+
+  for(var i=0;i<7;i++){
+    var d=new Date(ws);d.setDate(ws.getDate()+i);
+    var ds=fDate(d),it=(ds===fDate(TODAY));
+    var ps=[];
+    for(var pi=0;pi<patients.length;pi++){
+      for(var di=0;di<patients[pi].dates.length;di++){
+        if(patients[pi].dates[di].date===ds)ps.push({n:patients[pi].name,s:patients[pi].dates[di].session,a:patients[pi].dates[di].adjusted});
+      }
+    }
+    var c=document.createElement('div');c.className='wk-card'+(it?' today':'');
+    var html='<div class="wd">'+wd[i]+'</div><div class="wdt">'+(d.getMonth()+1)+'/'+d.getDate()+(it?'(今)':'')+'</div>';
+    if(ps.length){for(var k=0;k<ps.length;k++)html+='<div class="wp'+(ps[k].a?' adj':'')+'">'+(ps[k].a?'⚠':'')+ps[k].n+'<br>第'+ps[k].s+'次</div>';}
+    else html+='<div style="text-align:center;font-size:.5rem;color:#cbd5e0;margin-top:3px;">无</div>';
+    c.innerHTML=html;g.appendChild(c);
+  }
+}
+
+function navW(dir){
+  var ws=new Date(TODAY);ws.setDate(TODAY.getDate()-TODAY.getDay()+dir*7);
+  vy=ws.getFullYear();vm=ws.getMonth();renderWk();
+}
+
+function goToday(){
+  vy=TODAY.getFullYear();vm=TODAY.getMonth();
+  var sel=document.getElementById('ySel');if(sel)sel.value=vy;
+  renderCal();renderWk();
+  if(view==='month')navM(0);
+  toast('已回今天');
+}
+
+// ============ 列表 ============
+function renderList(){
+  var box=document.getElementById('listBox');if(!box)return;
+  var all=[];
+  for(var i=0;i<patients.length;i++){
+    var p=patients[i];
+    for(var j=0;j<p.dates.length;j++){
+      var d=p.dates[j];
+      all.push({date:d.date,name:p.name,session:d.session,total:p.totalSessions,adjusted:d.adjusted,orig:d.originalDate,notes:p.notes});
+    }
+  }
+  all.sort(function(a,b){return a.date<b.date?-1:a.date>b.date?1:0;});
+
+  if(!all.length){box.innerHTML='<div class="empty"><div class="ei">📋</div><div class="et">暂无安排<br>去「输入」添加</div></div>';return;}
+
+  var html='';
+  for(var k=0;k<all.length;k++){
+    var it=all[k],isPast=it.date<fDate(TODAY),isToday=it.date===fDate(TODAY);
+    var dt=pDate(it.date);var st='',sc='';
+    if(isPast){st='已完成';sc='done';}else if(isToday){st='今天';sc='today-st';}else{st='待进行';sc='up';}
+    html+='<div class="li-item"><div class="li-badge'+(isToday?' today':'')+(isPast?' past':'')+'"><div class="bm">'+(dt.getMonth()+1)+'月</div><div class="bd">'+dt.getDate()+'</div></div>'+
+      '<div class="li-info"><div class="ln">'+it.name+(it.adjusted?' ⚠️':'')+'</div><div class="ld">第'+it.session+'/'+it.total+'次'+(it.adjusted?' · 原:'+it.orig:'')+(it.notes?' · '+it.notes:'')+'</div></div>'+
+      '<div class="li-st '+sc+'">'+st+'</div></div>';
+  }
+  box.innerHTML=html;
+}
+
+// ============ 视图切换 ============
+function chView(v,btn){
+  view=v;
+  var btns=document.querySelectorAll('#vt button');for(var i=0;i<btns.length;i++)btns[i].classList.remove('on');btn.classList.add('on');
+  document.getElementById('calGrid').style.display='none';
+  document.getElementById('wkGrid').style.display='none';
+  document.getElementById('listBox').style.display='none';
+  document.getElementById('mNav').style.display='none';
+  document.getElementById('wNav').style.display='none';
+
+  if(v==='month'){document.getElementById('calGrid').style.display='';document.getElementById('mNav').style.display='';renderCal();}
+  else if(v==='week'){document.getElementById('wkGrid').style.display='';document.getElementById('wNav').style.display='';renderWk();}
+  else{document.getElementById('listBox').style.display='';renderList();}
+}
+
+// ============ 添加患者 ============
+function addP(){
+  var name=document.getElementById('pName').value.trim();
+  var sd=document.getElementById('pDate').value;
+  var iv=parseInt(document.getElementById('pInt').value);
+  var tv=parseInt(document.getElementById('pTot').value);
+  var note=document.getElementById('pNote').value.trim();
+
+  if(!name){toast('请输入姓名','e');return;}
+  if(!sd){toast('请选日期','e');return;}
+  if(!iv||iv<1){toast('间隔无效','e');return;}
+  if(!tv||tv<1){toast('次数无效','e');return;}
+
+  var cur=pDate(sd);var dates=[];
+  for(var i=0;i<tv;i++){dates.push({session:i+1,date:fDate(cur),adjusted:false,originalDate:fDate(cur)});cur.setDate(cur.getDate()+iv);}
+
+  patients.push({id:Date.now(),name:name,startDate:sd,intervalDays:iv,totalSessions:tv,notes:note,dates:dates,createdAt:new Date().toISOString()});
+  save();renderAll();
+
+  document.getElementById('pName').value='';
+  document.getElementById('pNote').value='';
+  document.getElementById('pInt').value='7';
+  document.getElementById('pTot').value='6';
+
+  toast('✅ 已添加 '+name,'s');
+  setTimeout(function(){switchTab(0);},350);
+}
+
+function setVal(id,v){document.getElementById(id).value=v;}
+
+// ============ 搜索患者 ============
+function doSearch(){
+  var kw=document.getElementById('srchInput').value.trim().toLowerCase();
+  var clr=document.getElementById('srchClear'); if(clr)clr.classList.toggle('on',kw.length>0);
+
+  // 搜索日程列表视图
+  var box=document.getElementById('listBox');
+  var meta=document.getElementById('srchMeta');
+
+  if(!kw){
+    // 无关键词：恢复完整列表
+    if(box&&box.dataset.filtered==='1'){ renderList(); box.dataset.filtered='0'; }
+    if(meta)meta.style.display='none';
+    // 恢复月历和周视图的高亮
+    clearHL();
+    return;
+  }
+
+  // 模糊匹配：姓名包含关键词中任意连续子串
+  var matched=[];
+  for(var i=0;i<patients.length;i++){
+    var p=patients[i];
+    if(p.name.toLowerCase().indexOf(kw)>=0){
+      matched.push(p);
+    }else{
+      // 也支持按备注搜索
+      if(p.notes&&p.notes.toLowerCase().indexOf(kw)>=0) matched.push(p);
+    }
+  }
+
+  // 更新meta
+  if(meta){
+    meta.style.display='';
+    meta.textContent='🔍 找到 '+matched.length+' 位患者匹配「'+kw+'」'+(matched.length?'：'+matched.map(function(p){return p.name;}).join('、'):'');
+  }
+
+  // 列表视图：只显示匹配患者的记录
+  if(box){
+    var all=[];
+    for(var mi=0;mi<matched.length;mi++){
+      var p=matched[mi];
+      for(var j=0;j<p.dates.length;j++){
+        var d=p.dates[j];
+        all.push({date:d.date,name:p.name,session:d.session,total:p.totalSessions,adjusted:d.adjusted,orig:d.originalDate,notes:p.notes});
+      }
+    }
+    all.sort(function(a,b){return a.date<b.date?-1:a.date>b.date?1:0;});
+
+    if(!all.length){box.innerHTML='<div class="srch-empty">😕 无匹配记录</div>';}
+    else{
+      var html='';
+      for(var k=0;k<all.length;k++){
+        var it=all[k],isPast=it.date<fDate(TODAY),isToday=it.date===fDate(TODAY);
+        var dt=pDate(it.date);var st='',sc='';
+        if(isPast){st='已完成';sc='done';}else if(isToday){st='今天';sc='today-st';}else{st='待进行';sc='up';}
+        // 高亮姓名中的匹配部分
+        var hlName=hlText(it.name,kw);
+        html+='<div class="li-item"><div class="li-badge'+(isToday?' today':'')+(isPast?' past':'')+'"><div class="bm">'+(dt.getMonth()+1)+'月</div><div class="bd">'+dt.getDate()+'</div></div>'+
+          '<div class="li-info"><div class="ln">'+hlName+(it.adjusted?' ⚠️':'')+'</div><div class="ld">第'+it.session+'/'+it.total+'次'+(it.adjusted?' · 原:'+it.orig:'')+(it.notes?' · '+it.notes:'')+'</div></div>'+
+          '<div class="li-st '+sc+'">'+st+'</div></div>';
+      }
+      box.innerHTML=html;
+    }
+    box.dataset.filtered='1';
+  }
+
+  // 月历高亮
+  hlCal(kw);
+  // 周视图高亮
+  hlWk(kw);
+}
+
+function clearSearch(){
+  var inp=document.getElementById('srchInput');
+  if(inp)inp.value='';
+  doSearch();
+}
+
+// 高亮文本中的匹配部分
+function hlText(text,kw){
+  var t=text.toLowerCase(),k=kw.toLowerCase();
+  var idx=t.indexOf(k);
+  if(idx<0)return text;
+  return text.substring(0,idx)+'<mark class="hl">'+text.substring(idx,idx+kw.length)+'</mark>'+text.substring(idx+kw.length);
+}
+
+// 月历高亮匹配患者
+function hlCal(kw){
+  if(view!=='month')return;
+  var k=kw.toLowerCase();
+  var cells=document.querySelectorAll('#calGrid .cal-c');
+  // 先确定哪些患者匹配
+  var matchIds={};
+  for(var pi=0;pi<patients.length;pi++){
+    if(patients[pi].name.toLowerCase().indexOf(k)>=0)matchIds[patients[pi].name]=true;
+  }
+  for(var i=0;i<cells.length;i++){
+    var c=cells[i];
+    var tags=c.querySelectorAll('.cal-p');
+    var hasMatch=false;
+    for(var t=0;t<tags.length;t++){
+      var txt=tags[t].textContent||'';
+      // cal-p format: "Name·第N次"
+      for(var nm in matchIds){
+        if(txt.indexOf(nm)>=0){hasMatch=true;break;}
+      }
+      if(hasMatch)break;
+    }
+    if(hasMatch) c.style.outline='2px solid var(--primary)'; else c.style.outline='';
+  }
+}
+
+// 周视图高亮
+function hlWk(kw){
+  if(view!=='week')return;
+  var k=kw.toLowerCase();
+  var matchIds={};
+  for(var pi=0;pi<patients.length;pi++){
+    if(patients[pi].name.toLowerCase().indexOf(k)>=0)matchIds[patients[pi].name]=true;
+  }
+  var cards=document.querySelectorAll('#wkGrid .wk-card');
+  for(var i=0;i<cards.length;i++){
+    var c=cards[i];
+    var ps=c.querySelectorAll('.wp');
+    var hasMatch=false;
+    for(var t=0;t<ps.length;t++){
+      var txt=ps[t].textContent||'';
+      for(var nm in matchIds){
+        if(txt.indexOf(nm)>=0){hasMatch=true;break;}
+      }
+      if(hasMatch)break;
+    }
+    if(hasMatch) c.style.outline='2px solid var(--primary)'; else c.style.outline='';
+  }
+}
+
+// 清除高亮
+function clearHL(){
+  var all=document.querySelectorAll('.cal-c,.wk-card');
+  for(var i=0;i<all.length;i++)all[i].style.outline='';
+}
+
+// ============ 患者卡片搜索 ============
+function doPcSearch(){
+  var kw=document.getElementById('pcSrchInput').value.trim().toLowerCase();
+  var clr=document.getElementById('pcSrchClear'); if(clr)clr.classList.toggle('on',kw.length>0);
+  var meta=document.getElementById('pcSrchMeta');
+
+  if(!kw){
+    renderPc(); if(meta)meta.style.display='none';
+    return;
+  }
+
+  var matched=[];
+  for(var i=0;i<patients.length;i++){
+    var p=patients[i];
+    if(p.name.toLowerCase().indexOf(kw)>=0 || (p.notes&&p.notes.toLowerCase().indexOf(kw)>=0)){
+      matched.push(p);
+    }
+  }
+
+  if(meta){
+    meta.style.display='';
+    meta.textContent='🔍 找到 '+matched.length+' 位患者匹配「'+kw+'」'+(matched.length?'：'+matched.map(function(p){return p.name;}).join('、'):'');
+  }
+
+  var c=document.getElementById('pcList'); if(!c)return;
+  if(!matched.length){c.innerHTML='<div class="srch-empty">😕 无匹配患者</div>';return;}
+
+  var html='';
+  for(var i=0;i<matched.length;i++){
+    var p=matched[i];var dn=0,adj=0;
+    for(var j=0;j<p.dates.length;j++){if(pDate(p.dates[j].date)<TODAY)dn++;if(p.dates[j].adjusted)adj++;}
+    var pct=Math.round(dn/p.totalSessions*100);
+    var hlName=hlText(p.name,kw);
+    html+='<div class="pc"><div class="pc-head"><div><div class="pc-name">👤 '+hlName+'</div><div class="pc-meta">'+p.intervalDays+'天·共'+p.totalSessions+'次·完成'+dn+'/'+p.totalSessions+(p.notes?' · 📝'+p.notes:'')+(adj?' · ⚠️'+adj+'次':'')+'</div></div>'+
+      '<div class="pc-acts"><button class="btn warn sm" onclick="openAdj('+p.id+')">🔄</button><button class="btn danger sm" onclick="delP('+p.id+')">🗑</button></div></div>'+
+      '<div class="pc-prog"><div style="width:'+pct+'%"></div></div><div class="pc-tags">';
+    for(var k=0;k<p.dates.length;k++){var dd=p.dates[k];html+='<span class="pc-tag'+(dd.adjusted?' adj':'')+'">'+(dd.adjusted?'⚠':'')+'第'+dd.session+'次:'+fCN(dd.date)+'</span>';}
+    html+='</div></div>';
+  }
+  c.innerHTML=html;
+}
+
+function clearPcSearch(){
+  var inp=document.getElementById('pcSrchInput'); if(inp)inp.value='';
+  doPcSearch();
+}
+
+// ============ 患者列表 ============
+function renderPc(){
+  var c=document.getElementById('pcList');if(!c)return;
+  if(!patients.length){c.innerHTML='<div class="empty"><div class="ei">👤</div><div class="et">暂无患者<br>请在上方表单添加</div></div>';return;}
+  var html='';
+  for(var i=0;i<patients.length;i++){
+    var p=patients[i];var dn=0,adj=0;
+    for(var j=0;j<p.dates.length;j++){if(pDate(p.dates[j].date)<TODAY)dn++;if(p.dates[j].adjusted)adj++;}
+    var pct=Math.round(dn/p.totalSessions*100);
+    html+='<div class="pc"><div class="pc-head"><div><div class="pc-name">👤 '+p.name+'</div><div class="pc-meta">'+p.intervalDays+'天·共'+p.totalSessions+'次·完成'+dn+'/'+p.totalSessions+(p.notes?' · 📝'+p.notes:'')+(adj?' · ⚠️'+adj+'次':'')+'</div></div>'+
+      '<div class="pc-acts"><button class="btn warn sm" onclick="openAdj('+p.id+')">🔄</button><button class="btn danger sm" onclick="delP('+p.id+')">🗑</button></div></div>'+
+      '<div class="pc-prog"><div style="width:'+pct+'%"></div></div><div class="pc-tags">';
+    for(var k=0;k<p.dates.length;k++){var dd=p.dates[k];html+='<span class="pc-tag'+(dd.adjusted?' adj':'')+'">'+(dd.adjusted?'⚠':'')+'第'+dd.session+'次:'+fCN(dd.date)+'</span>';}
+    html+='</div></div>';
+  }
+  c.innerHTML=html;
+}
+
+function delP(id){
+  var p=null;for(var i=0;i<patients.length;i++)if(patients[i].id===id){p=patients[i];break;}
+  if(!p)return;
+  if(confirm('删除「'+p.name+'」？')){patients=patients.filter(function(x){return x.id!==id;});save();renderAll();toast('已删除','s');}
+}
+
+// ============ 调整日期 ============
+function openAdj(id){
+  var p=null;for(var i=0;i<patients.length;i++)if(patients[i].id===id){p=patients[i];break;}
+  if(!p)return;adjId=id;
+  var sub=document.getElementById('adjSub');if(sub)sub.textContent='患者：'+p.name;
+  var html='';
+  for(var i=0;i<p.dates.length;i++){var d=p.dates[i];
+    html+='<div class="ar"><div><div class="ar-s">第'+(i+1)+'次</div>'+(d.adjusted?'<div class="ar-o">原:'+d.originalDate+'</div>':'')+'</div>'+
+      '<input type="date" id="ad_'+i+'" value="'+d.date+'" onchange="markAdj('+i+')">'+
+      '<button class="ar-reset"'+(d.adjusted?'':' disabled')+' onclick="rstAdj('+i+')">↩恢复</button></div>';
+  }
+  document.getElementById('adjBox').innerHTML=html;
+  document.getElementById('mask').classList.add('on');
+}
+
+function rstAdj(i){
+  var p=null;for(var k=0;k<patients.length;k++)if(patients[k].id===adjId){p=patients[k];break;}
+  if(p&&p.dates[i])document.getElementById('ad_'+i).value=p.dates[i].originalDate;
+}
+
+function saveAdj(){
+  var p=null;for(var k=0;k<patients.length;k++)if(patients[k].id===adjId){p=patients[k];break;}
+  if(!p){closeM();return;}
+  var chg=false;
+  for(var i=0;i<p.dates.length;i++){
+    var nv=document.getElementById('ad_'+i).value;
+    if(nv&&nv!==p.dates[i].date){if(!p.dates[i].adjusted)p.dates[i].originalDate=p.dates[i].date;p.dates[i].date=nv;p.dates[i].adjusted=true;chg=true;}
+  }
+  if(chg){save();renderAll();toast('已保存','s');}
+  closeM();
+}
+
+function closeM(){document.getElementById('mask').classList.remove('on');adjId=null;}
+
+// ============ 导出 ============
+function expCSV(){
+  if(!patients.length){toast('无数据','e');return;}
+  var csv='\uFEFF患者,首次日期,间隔,总次,备注,化疗次,日期,调整,原日期\n';
+  for(var i=0;i<patients.length;i++){var p=patients[i];for(var j=0;j<p.dates.length;j++){var d=p.dates[j];csv+='"'+p.name+'",'+p.startDate+','+p.intervalDays+','+p.totalSessions+',"'+p.notes+'",'+d.session+','+d.date+','+(d.adjusted?'是':'否')+','+d.originalDate+'\n';}}
+  dl(csv,'化疗日程_'+fDate(TODAY)+'.csv','text/csv');toast('CSV已导出','s');
+}
+
+function expJSON(){
+  if(!patients.length){toast('无数据','e');return;}
+  dl(JSON.stringify(patients,null,2),'化疗备份_'+fDate(TODAY)+'.json','application/json');toast('备份已导出','s');
+}
+
+function impJSON(e){
+  var f=e.target.files[0];if(!f)return;
+  var r=new FileReader();
+  r.onload=function(ev){
+    try{var data=JSON.parse(ev.target.result);if(!Array.isArray(data))throw new Error('格式错');
+      if(patients.length&&!confirm('已有数据，将合并。继续？'))return;
+      for(var i=0;i<data.length;i++){var np=data[i],has=false;for(var j=0;j<patients.length;j++)if(patients[j].id===np.id){has=true;break;}if(!has)patients.push(np);}
+      save();renderAll();toast('导入 '+data.length+' 位','s');
+    }catch(err){toast('失败:'+err.message,'e');}
+  };
+  r.readAsText(f);e.target.value='';
+}
+
+function dl(content,name,mime){var b=new Blob([content],{type:mime});var u=URL.createObjectURL(b);var a=document.createElement('a');a.href=u;a.download=name;a.click();URL.revokeObjectURL(u);}
+
+// ============ 清空 ============
+function clearAll(){
+  if(!patients.length){toast('无数据','w');return;}
+  if(confirm('清空全部？不可恢复！')){if(confirm('再次确认？')){patients=[];save();renderAll();toast('已清空','s');}}
+}
+
+// ============ 预览 ============
+function renderPrev(){
+  var c=document.getElementById('prevCard'),b=document.getElementById('prevBox');if(!c||!b)return;
+  if(!patients.length){c.style.display='none';return;}
+  c.style.display='';
+  var sz=new Blob([JSON.stringify(patients)]).size,szs=sz>1024?(sz/1024).toFixed(1)+'KB':sz+'B';
+  var mn='9999-99-99',mx='0000-00-00';
+  for(var i=0;i<patients.length;i++)for(var j=0;j<patients[i].dates.length;j++){var d=patients[i].dates[j].date;if(d<mn)mn=d;if(d>mx)mx=d;}
+  var adj=0;for(var a=0;a<patients.length;a++)for(var bb=0;bb<patients[a].dates.length;bb++)if(patients[a].dates[bb].adjusted)adj++;
+  var tot=0;for(var t=0;t<patients.length;t++)tot+=patients[t].dates.length;
+  b.innerHTML='<div>👥 患者：<b>'+patients.length+'</b></div><div>💊 记录：<b>'+tot+'</b> 条</div><div>📅 最早：<b>'+(mn==='9999-99-99'?'-':mn)+'</b></div><div>📅 最晚：<b>'+(mx==='0000-00-00'?'-':mx)+'</b></div><div>⚠️ 调整：<b>'+adj+'</b> 次</div><div>💾 大小：<b>'+szs+'</b></div>';
+}
+
+function updSto(){
+  var el=document.getElementById('stoInfo');if(!el)return;
+  var sz=new Blob([JSON.stringify(patients)]).size;
+  el.innerHTML='<div>📊 占用：<b>'+(sz/1024).toFixed(1)+'KB</b> / 5MB</div>';
+}
+
+function renderAll(){renderPc();renderCal();renderWk();renderList();updStats();renderPrev();}
+
+// ============ 键盘 ============
+document.addEventListener('keydown',function(e){
+  if(e.key==='Escape')closeM();
+});
+</script>
+</body>
+</html>
