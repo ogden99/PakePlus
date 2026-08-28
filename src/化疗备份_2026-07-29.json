@@ -1,0 +1,426 @@
+[
+  {
+    "id": 1785339296487,
+    "name": "刘凌",
+    "startDate": "2026-06-18",
+    "intervalDays": 21,
+    "totalSessions": 8,
+    "notes": "",
+    "dates": [
+      {
+        "session": 1,
+        "date": "2026-06-18",
+        "adjusted": false,
+        "originalDate": "2026-06-18"
+      },
+      {
+        "session": 2,
+        "date": "2026-07-10",
+        "adjusted": true,
+        "originalDate": "2026-07-09"
+      },
+      {
+        "session": 3,
+        "date": "2026-07-31",
+        "adjusted": true,
+        "originalDate": "2026-07-30"
+      },
+      {
+        "session": 4,
+        "date": "2026-08-21",
+        "adjusted": true,
+        "originalDate": "2026-08-20"
+      },
+      {
+        "session": 5,
+        "date": "2026-09-11",
+        "adjusted": true,
+        "originalDate": "2026-09-10"
+      },
+      {
+        "session": 6,
+        "date": "2026-10-02",
+        "adjusted": true,
+        "originalDate": "2026-10-01"
+      },
+      {
+        "session": 7,
+        "date": "2026-10-23",
+        "adjusted": true,
+        "originalDate": "2026-10-22"
+      },
+      {
+        "session": 8,
+        "date": "2026-11-13",
+        "adjusted": true,
+        "originalDate": "2026-11-12"
+      }
+    ],
+    "createdAt": "2026-07-29T15:34:56.487Z"
+  },
+  {
+    "id": 1785339386583,
+    "name": "陈雪梅",
+    "startDate": "2026-07-14",
+    "intervalDays": 21,
+    "totalSessions": 6,
+    "notes": "",
+    "dates": [
+      {
+        "session": 1,
+        "date": "2026-07-14",
+        "adjusted": false,
+        "originalDate": "2026-07-14"
+      },
+      {
+        "session": 2,
+        "date": "2026-08-04",
+        "adjusted": false,
+        "originalDate": "2026-08-04"
+      },
+      {
+        "session": 3,
+        "date": "2026-08-25",
+        "adjusted": false,
+        "originalDate": "2026-08-25"
+      },
+      {
+        "session": 4,
+        "date": "2026-09-15",
+        "adjusted": false,
+        "originalDate": "2026-09-15"
+      },
+      {
+        "session": 5,
+        "date": "2026-10-06",
+        "adjusted": false,
+        "originalDate": "2026-10-06"
+      },
+      {
+        "session": 6,
+        "date": "2026-10-27",
+        "adjusted": false,
+        "originalDate": "2026-10-27"
+      }
+    ],
+    "createdAt": "2026-07-29T15:36:26.583Z"
+  },
+  {
+    "id": 1785339525671,
+    "name": "张文英",
+    "startDate": "2026-04-24",
+    "intervalDays": 21,
+    "totalSessions": 8,
+    "notes": "",
+    "dates": [
+      {
+        "session": 1,
+        "date": "2026-04-24",
+        "adjusted": false,
+        "originalDate": "2026-04-24"
+      },
+      {
+        "session": 2,
+        "date": "2026-05-15",
+        "adjusted": false,
+        "originalDate": "2026-05-15"
+      },
+      {
+        "session": 3,
+        "date": "2026-06-05",
+        "adjusted": false,
+        "originalDate": "2026-06-05"
+      },
+      {
+        "session": 4,
+        "date": "2026-06-26",
+        "adjusted": false,
+        "originalDate": "2026-06-26"
+      },
+      {
+        "session": 5,
+        "date": "2026-07-17",
+        "adjusted": false,
+        "originalDate": "2026-07-17"
+      },
+      {
+        "session": 6,
+        "date": "2026-08-07",
+        "adjusted": false,
+        "originalDate": "2026-08-07"
+      },
+      {
+        "session": 7,
+        "date": "2026-08-28",
+        "adjusted": false,
+        "originalDate": "2026-08-28"
+      },
+      {
+        "session": 8,
+        "date": "2026-09-18",
+        "adjusted": false,
+        "originalDate": "2026-09-18"
+      }
+    ],
+    "createdAt": "2026-07-29T15:38:45.671Z"
+  },
+  {
+    "id": 1785339603815,
+    "name": "何云",
+    "startDate": "2026-04-24",
+    "intervalDays": 21,
+    "totalSessions": 8,
+    "notes": "",
+    "dates": [
+      {
+        "session": 1,
+        "date": "2026-04-24",
+        "adjusted": false,
+        "originalDate": "2026-04-24"
+      },
+      {
+        "session": 2,
+        "date": "2026-05-15",
+        "adjusted": false,
+        "originalDate": "2026-05-15"
+      },
+      {
+        "session": 3,
+        "date": "2026-06-05",
+        "adjusted": false,
+        "originalDate": "2026-06-05"
+      },
+      {
+        "session": 4,
+        "date": "2026-06-26",
+        "adjusted": false,
+        "originalDate": "2026-06-26"
+      },
+      {
+        "session": 5,
+        "date": "2026-07-17",
+        "adjusted": false,
+        "originalDate": "2026-07-17"
+      },
+      {
+        "session": 6,
+        "date": "2026-08-07",
+        "adjusted": false,
+        "originalDate": "2026-08-07"
+      },
+      {
+        "session": 7,
+        "date": "2026-08-28",
+        "adjusted": false,
+        "originalDate": "2026-08-28"
+      },
+      {
+        "session": 8,
+        "date": "2026-09-18",
+        "adjusted": false,
+        "originalDate": "2026-09-18"
+      }
+    ],
+    "createdAt": "2026-07-29T15:40:03.815Z"
+  },
+  {
+    "id": 1785339778486,
+    "name": "张媛",
+    "startDate": "2026-05-25",
+    "intervalDays": 21,
+    "totalSessions": 6,
+    "notes": "",
+    "dates": [
+      {
+        "session": 1,
+        "date": "2026-05-25",
+        "adjusted": false,
+        "originalDate": "2026-05-25"
+      },
+      {
+        "session": 2,
+        "date": "2026-06-15",
+        "adjusted": false,
+        "originalDate": "2026-06-15"
+      },
+      {
+        "session": 3,
+        "date": "2026-07-06",
+        "adjusted": false,
+        "originalDate": "2026-07-06"
+      },
+      {
+        "session": 4,
+        "date": "2026-07-27",
+        "adjusted": false,
+        "originalDate": "2026-07-27"
+      },
+      {
+        "session": 5,
+        "date": "2026-08-17",
+        "adjusted": false,
+        "originalDate": "2026-08-17"
+      },
+      {
+        "session": 6,
+        "date": "2026-09-07",
+        "adjusted": false,
+        "originalDate": "2026-09-07"
+      }
+    ],
+    "createdAt": "2026-07-29T15:42:58.486Z"
+  },
+  {
+    "id": 1785339871726,
+    "name": "宋耀凤",
+    "startDate": "2026-07-07",
+    "intervalDays": 21,
+    "totalSessions": 6,
+    "notes": "",
+    "dates": [
+      {
+        "session": 1,
+        "date": "2026-07-07",
+        "adjusted": false,
+        "originalDate": "2026-07-07"
+      },
+      {
+        "session": 2,
+        "date": "2026-07-28",
+        "adjusted": false,
+        "originalDate": "2026-07-28"
+      },
+      {
+        "session": 3,
+        "date": "2026-08-18",
+        "adjusted": false,
+        "originalDate": "2026-08-18"
+      },
+      {
+        "session": 4,
+        "date": "2026-09-08",
+        "adjusted": false,
+        "originalDate": "2026-09-08"
+      },
+      {
+        "session": 5,
+        "date": "2026-09-29",
+        "adjusted": false,
+        "originalDate": "2026-09-29"
+      },
+      {
+        "session": 6,
+        "date": "2026-10-20",
+        "adjusted": false,
+        "originalDate": "2026-10-20"
+      }
+    ],
+    "createdAt": "2026-07-29T15:44:31.726Z"
+  },
+  {
+    "id": 1785339951582,
+    "name": "黄碧香",
+    "startDate": "2026-05-02",
+    "intervalDays": 21,
+    "totalSessions": 8,
+    "notes": "",
+    "dates": [
+      {
+        "session": 1,
+        "date": "2026-05-02",
+        "adjusted": false,
+        "originalDate": "2026-05-02"
+      },
+      {
+        "session": 2,
+        "date": "2026-05-23",
+        "adjusted": false,
+        "originalDate": "2026-05-23"
+      },
+      {
+        "session": 3,
+        "date": "2026-06-13",
+        "adjusted": false,
+        "originalDate": "2026-06-13"
+      },
+      {
+        "session": 4,
+        "date": "2026-07-04",
+        "adjusted": false,
+        "originalDate": "2026-07-04"
+      },
+      {
+        "session": 5,
+        "date": "2026-07-25",
+        "adjusted": false,
+        "originalDate": "2026-07-25"
+      },
+      {
+        "session": 6,
+        "date": "2026-08-15",
+        "adjusted": false,
+        "originalDate": "2026-08-15"
+      },
+      {
+        "session": 7,
+        "date": "2026-09-05",
+        "adjusted": false,
+        "originalDate": "2026-09-05"
+      },
+      {
+        "session": 8,
+        "date": "2026-09-26",
+        "adjusted": false,
+        "originalDate": "2026-09-26"
+      }
+    ],
+    "createdAt": "2026-07-29T15:45:51.582Z"
+  },
+  {
+    "id": 1785340045006,
+    "name": "董和凤",
+    "startDate": "2026-06-11",
+    "intervalDays": 21,
+    "totalSessions": 6,
+    "notes": "",
+    "dates": [
+      {
+        "session": 1,
+        "date": "2026-06-11",
+        "adjusted": false,
+        "originalDate": "2026-06-11"
+      },
+      {
+        "session": 2,
+        "date": "2026-07-02",
+        "adjusted": false,
+        "originalDate": "2026-07-02"
+      },
+      {
+        "session": 3,
+        "date": "2026-07-23",
+        "adjusted": false,
+        "originalDate": "2026-07-23"
+      },
+      {
+        "session": 4,
+        "date": "2026-08-13",
+        "adjusted": false,
+        "originalDate": "2026-08-13"
+      },
+      {
+        "session": 5,
+        "date": "2026-09-03",
+        "adjusted": false,
+        "originalDate": "2026-09-03"
+      },
+      {
+        "session": 6,
+        "date": "2026-09-24",
+        "adjusted": false,
+        "originalDate": "2026-09-24"
+      }
+    ],
+    "createdAt": "2026-07-29T15:47:25.006Z"
+  }
+]
